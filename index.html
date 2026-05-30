@@ -337,8 +337,8 @@
   </div>
 
   <!-- MotoCare Supabase Configurations -->
-  <script src="lib/supabaseClient.js"></script>
-  <script src="lib/supabaseService.js"></script>
+  <script src="lib/supabaseClient.js?v=1.1"></script>
+  <script src="lib/supabaseService.js?v=1.1"></script>
 
   <!-- React Code using Babel Standalone -->
   <script type="text/babel">
@@ -530,7 +530,7 @@
       const [authMode, setAuthMode] = React.useState('login'); // 'login' | 'register' | 'forgot'
       const [authEmail, setAuthEmail] = React.useState('');
       const [authPassword, setAuthPassword] = React.useState('');
-      const [authError, setAuthError] = React.useState('');
+      const [authError, setAuthError] = React.useState(window.supabaseError || '');
       const [toast, setToast] = React.useState(null);
 
       // showToast helper
@@ -1164,7 +1164,7 @@
         e.preventDefault();
         setAuthError('');
         if (!window.supabaseClient) {
-          setAuthError('Supabase tidak terkonfigurasi. Gunakan mode tamu.');
+          setAuthError(window.supabaseError || 'Supabase tidak terkonfigurasi. Gunakan mode tamu.');
           return;
         }
         try {
@@ -1183,7 +1183,7 @@
         e.preventDefault();
         setAuthError('');
         if (!window.supabaseClient) {
-          setAuthError('Supabase tidak terkonfigurasi. Gunakan mode tamu.');
+          setAuthError(window.supabaseError || 'Supabase tidak terkonfigurasi. Gunakan mode tamu.');
           return;
         }
         const fd = new FormData(e.target);
@@ -1210,7 +1210,7 @@
         e.preventDefault();
         setAuthError('');
         if (!window.supabaseClient) {
-          setAuthError('Supabase tidak terkonfigurasi. Gunakan mode tamu.');
+          setAuthError(window.supabaseError || 'Supabase tidak terkonfigurasi. Gunakan mode tamu.');
           return;
         }
         try {
@@ -1225,7 +1225,7 @@
 
       const handleGoogleLogin = async () => {
         if (!window.supabaseClient) {
-          showToast('Supabase tidak terkonfigurasi. Gunakan mode tamu.', 'error');
+          showToast(window.supabaseError || 'Supabase tidak terkonfigurasi. Gunakan mode tamu.', 'error');
           return;
         }
         try {
@@ -1242,25 +1242,6 @@
         localStorage.setItem('motocare_guest', 'true');
         setGuestMode(true);
         showToast('Masuk sebagai Tamu (Data disimpan lokal)');
-      };
-
-      const handleSaveCredentials = (e) => {
-        e.preventDefault();
-        const fd = new FormData(e.target);
-        const url = fd.get('supabaseUrl').trim();
-        const key = fd.get('supabaseAnonKey').trim();
-
-        if (url && key) {
-          localStorage.setItem('motocare_supabase_url', url);
-          localStorage.setItem('motocare_supabase_anon_key', key);
-          showToast('Kredensial disimpan! Silakan muat ulang halaman.', 'success');
-          setTimeout(() => window.location.reload(), 1500);
-        } else {
-          localStorage.removeItem('motocare_supabase_url');
-          localStorage.removeItem('motocare_supabase_anon_key');
-          showToast('Kredensial dikosongkan. Kembali ke mode bawaan.', 'success');
-          setTimeout(() => window.location.reload(), 1500);
-        }
       };
 
       const handleLogout = async () => {
@@ -1776,45 +1757,6 @@
                     >
                       Masuk / Daftar
                     </button>
-                  )}
-                </div>
-
-                {/* 2. Supabase Credentials Sync Section */}
-                <div className="glass rounded-[32px] p-6 space-y-4">
-                  <div className="flex items-center gap-2 text-iosBlue">
-                    <Settings className="w-5 h-5" />
-                    <h3 className="font-bold text-sm uppercase tracking-wider">Hubungkan Supabase Sendiri</h3>
-                  </div>
-                  <p className="text-xs text-iosGray">Anda dapat menggunakan database Supabase gratis Anda sendiri. Masukkan kredensial berikut untuk sinkronisasi otomatis:</p>
-                  
-                  <form onSubmit={handleSaveCredentials} className="space-y-4 text-xs">
-                    <div className="space-y-2">
-                      <label className="text-[10px] text-iosGray uppercase tracking-wider font-bold">Supabase URL</label>
-                      <input 
-                        type="text" 
-                        name="supabaseUrl"
-                        placeholder="https://xxxxxx.supabase.co"
-                        defaultValue={localStorage.getItem('motocare_supabase_url') || ''}
-                        className="w-full glass-input py-2.5 px-4 text-xs font-semibold"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] text-iosGray uppercase tracking-wider font-bold">Supabase Anon Key</label>
-                      <input 
-                        type="password" 
-                        name="supabaseAnonKey"
-                        placeholder="eyJhbGciOi..."
-                        defaultValue={localStorage.getItem('motocare_supabase_anon_key') || ''}
-                        className="w-full glass-input py-2.5 px-4 text-xs font-semibold"
-                      />
-                    </div>
-                    <button 
-                      type="submit"
-                      className="bg-iosBlue hover:bg-iosBlue/95 text-white font-bold text-xs py-2.5 px-5 rounded-full active:scale-95 transition-transform"
-                    >
-                      Simpan Kredensial
-                    </button>
-                  </form>
                 </div>
 
                 {/* 3. Sync local data to Supabase (Only if logged in) */}
