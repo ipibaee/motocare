@@ -1,5 +1,10 @@
 {
-  "buildCommand": "node build.js",
-  "outputDirectory": "dist",
-  "cleanUrls": true
+  "version": 2,
+  "buildCommand": "echo 'no build needed'",
+  "outputDirectory": ".",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/lib/(.*)", "destination": "/lib/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
