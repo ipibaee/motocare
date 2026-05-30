@@ -1164,7 +1164,7 @@
         e.preventDefault();
         setAuthError('');
         if (!window.supabaseClient) {
-          setAuthError(window.supabaseError || 'Supabase tidak terkonfigurasi. Gunakan mode tamu.');
+          setAuthError(window.supabaseError || ('Supabase tidak terkonfigurasi (Client: ' + (window.supabaseClient ? 'OK' : 'NULL') + ', Error: ' + (window.supabaseError || 'None') + '). Gunakan mode tamu.'));
           return;
         }
         try {
@@ -1183,7 +1183,7 @@
         e.preventDefault();
         setAuthError('');
         if (!window.supabaseClient) {
-          setAuthError(window.supabaseError || 'Supabase tidak terkonfigurasi. Gunakan mode tamu.');
+          setAuthError(window.supabaseError || ('Supabase tidak terkonfigurasi (Client: ' + (window.supabaseClient ? 'OK' : 'NULL') + ', Error: ' + (window.supabaseError || 'None') + '). Gunakan mode tamu.'));
           return;
         }
         const fd = new FormData(e.target);
@@ -1210,7 +1210,7 @@
         e.preventDefault();
         setAuthError('');
         if (!window.supabaseClient) {
-          setAuthError(window.supabaseError || 'Supabase tidak terkonfigurasi. Gunakan mode tamu.');
+          setAuthError(window.supabaseError || ('Supabase tidak terkonfigurasi (Client: ' + (window.supabaseClient ? 'OK' : 'NULL') + ', Error: ' + (window.supabaseError || 'None') + '). Gunakan mode tamu.'));
           return;
         }
         try {
@@ -1225,7 +1225,7 @@
 
       const handleGoogleLogin = async () => {
         if (!window.supabaseClient) {
-          showToast(window.supabaseError || 'Supabase tidak terkonfigurasi. Gunakan mode tamu.', 'error');
+          showToast(window.supabaseError || ('Supabase tidak terkonfigurasi (Client: ' + (window.supabaseClient ? 'OK' : 'NULL') + ', Error: ' + (window.supabaseError || 'None') + '). Gunakan mode tamu.'), 'error');
           return;
         }
         try {
