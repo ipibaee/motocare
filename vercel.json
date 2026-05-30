@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "echo 'no build needed'",
+  "buildCommand": "node build.js",
   "outputDirectory": ".",
   "cleanUrls": true,
   "rewrites": [

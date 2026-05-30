@@ -7,7 +7,7 @@ console.log('Starting MotoCare build...');
 let url = process.env.VITE_SUPABASE_URL || '';
 let key = process.env.VITE_SUPABASE_ANON_KEY || '';
 
-// Load local .env if it exists
+// Load local .env if it exists (for local testing if node is available)
 if (fs.existsSync('.env')) {
   const envContent = fs.readFileSync('.env', 'utf8');
   const urlMatch = envContent.match(/VITE_SUPABASE_URL\s*=\s*(.*)/);
@@ -26,22 +26,26 @@ if (!fs.existsSync('index.html')) {
 }
 let html = fs.readFileSync('index.html', 'utf8');
 
-// Inject env keys into window.env
-const injection = `
-  <!-- Environment variables injected by build.js -->
+// Clean up any previous injections to avoid duplicates
+const injectionRegex = /<!-- Environment variables injected by build.js -->[\s\S]*?<\/script>/g;
+html = html.replace(injectionRegex, '');
+
+// Inject env keys into window
+const injection = `<!-- Environment variables injected by build.js -->
   <script>
     window.VITE_SUPABASE_URL = "${url}";
     window.VITE_SUPABASE_ANON_KEY = "${key}";
-  </script>
-`;
+  </script>`;
 html = html.replace('</head>', `${injection}\n</head>`);
 
-// Ensure dist folder exists
+// 1. Write back to root index.html (in-place)
+fs.writeFileSync('index.html', html);
+console.log('Successfully injected env variables into root index.html');
+
+// 2. Also write to dist/index.html (for backward compatibility if Vercel uses dist)
 if (!fs.existsSync('dist')) {
   fs.mkdirSync('dist');
 }
-
-// Write to dist/index.html
 fs.writeFileSync(path.join('dist', 'index.html'), html);
 
 // Copy lib directory if it exists
@@ -52,9 +56,9 @@ if (fs.existsSync('lib')) {
   }
   fs.readdirSync('lib').forEach(file => {
     fs.copyFileSync(path.join('lib', file), path.join(distLibDir, file));
-    console.log(`Copied: lib/${file} -> dist/lib/${file}`);
   });
+  console.log('Successfully copied lib assets to dist/lib');
 }
 
-console.log('Build completed successfully in dist/ directory!');
+console.log('Build completed successfully!');
 process.exit(0);
