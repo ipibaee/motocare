@@ -53,11 +53,7 @@
 
   <style>
     body {
-      background: 
-        radial-gradient(circle at 15% 15%, rgba(59, 141, 255, 0.22), transparent 45%),
-        radial-gradient(circle at 85% 35%, rgba(229, 72, 77, 0.15), transparent 40%),
-        radial-gradient(circle at 50% 85%, rgba(48, 209, 88, 0.12), transparent 38%),
-        #050506;
+      background: #000000;
       color: #ffffff;
       font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       margin: 0;
@@ -92,80 +88,45 @@
     }
 
     /* ----------------------------------------------------
-       LIQUID GLASS / GLASSMORPHISM REUSABLE CLASSES
+       SOLID WIDGETS & CARDS DESIGN SYSTEM
        ---------------------------------------------------- */
     
-    /* Base Glass Card */
+    /* Base Card (zinc-900 / dark charcoal) */
     .glass, .glass-card {
-      background:
-        radial-gradient(circle at 20% 0%, rgba(255,255,255,0.12), transparent 32%),
-        linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.025)),
-        rgba(30,30,32,0.78);
-      backdrop-filter: blur(18px) saturate(150%);
-      -webkit-backdrop-filter: blur(18px) saturate(150%);
-      border: 1px solid rgba(255,255,255,0.10);
-      box-shadow:
-        0 12px 34px rgba(0,0,0,0.38),
-        inset 0 1px 0 rgba(255,255,255,0.14);
+      background: #18181B;
+      border: 1px solid #27272A;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
       position: relative;
     }
 
-    /* Strong Glass Panel */
+    /* Strong Panel / Modal Container */
     .glass-panel, .glass-strong {
-      background:
-        linear-gradient(145deg, rgba(255,255,255,0.10), rgba(255,255,255,0.035)),
-        rgba(28,28,30,0.72);
-      backdrop-filter: blur(22px) saturate(160%);
-      -webkit-backdrop-filter: blur(22px) saturate(160%);
-      border: 1px solid rgba(255,255,255,0.12);
-      box-shadow:
-        0 18px 50px rgba(0,0,0,0.45),
-        inset 0 1px 0 rgba(255,255,255,0.18),
-        inset 0 -1px 0 rgba(255,255,255,0.04);
+      background: #1C1C1E;
+      border: 1px solid #2C2C2E;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
       position: relative;
     }
 
-    /* Glass Pill for headers and tags */
+    /* Pill for headers and tags */
     .glass-pill {
-      background:
-        linear-gradient(145deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04)),
-        rgba(28,28,30,0.70);
-      backdrop-filter: blur(20px) saturate(170%);
-      -webkit-backdrop-filter: blur(20px) saturate(170%);
-      border: 1px solid rgba(255,255,255,0.14);
-      box-shadow:
-        0 10px 30px rgba(0,0,0,0.38),
-        inset 0 1px 0 rgba(255,255,255,0.20);
+      background: #2C2C2E;
+      border: 1px solid #3A3A3C;
       position: relative;
     }
 
-    /* Urgent Glass Card */
+    /* Urgent Alert Card */
     .glass-urgent {
-      background:
-        radial-gradient(circle at 15% 0%, rgba(255,110,120,0.22), transparent 35%),
-        linear-gradient(145deg, rgba(120,20,28,0.50), rgba(38,8,12,0.72));
-      backdrop-filter: blur(20px) saturate(160%);
-      -webkit-backdrop-filter: blur(20px) saturate(160%);
-      border: 1px solid rgba(255,90,100,0.38);
-      box-shadow:
-        0 16px 42px rgba(0,0,0,0.45),
-        0 0 34px rgba(255,70,90,0.12),
-        inset 0 1px 0 rgba(255,255,255,0.13);
+      background: #18181B;
+      border: 1.5px solid #E5484D;
+      box-shadow: 0 8px 30px rgba(229, 72, 77, 0.12);
       position: relative;
     }
 
-    /* Fixed Liquid Glass Bottom Nav (Mobile Only) */
+    /* Fixed Bottom Nav (Mobile Only) */
     .glass-bottom-nav {
-      background:
-        linear-gradient(145deg, rgba(255,255,255,0.16), rgba(255,255,255,0.04)),
-        rgba(28,28,30,0.68);
-      backdrop-filter: blur(30px) saturate(180%);
-      -webkit-backdrop-filter: blur(30px) saturate(180%);
-      border: 1px solid rgba(255,255,255,0.18);
-      box-shadow:
-        0 18px 60px rgba(0,0,0,0.58),
-        inset 0 1px 0 rgba(255,255,255,0.22),
-        inset 0 -1px 0 rgba(255,255,255,0.06);
+      background: #1C1C1E;
+      border-top: 1px solid #2C2C2E;
+      box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.6);
       position: fixed;
       bottom: 16px;
       left: 50%;
@@ -178,35 +139,28 @@
       overflow: hidden;
     }
 
-    /* Reflection Pseudo Element (iOS effect) */
+    /* Reflection Pseudo Element (Disabled/Transparent for Flat Style) */
     .glass::before, .glass-card::before, .glass-panel::before, .glass-strong::before, .glass-bottom-nav::before, .glass-urgent::before, .glass-pill::before {
       content: "";
       position: absolute;
       inset: 1px;
       border-radius: inherit;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03) 40%, rgba(255, 255, 255, 0));
+      background: transparent;
       pointer-events: none;
       z-index: 0;
     }
 
     .glass-urgent::before {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 80, 90, 0.05) 40%, rgba(255, 255, 255, 0));
+      background: transparent;
     }
 
-    /* Mobile Sticky Glass Header */
+    /* Mobile Sticky Header */
     .glass-header {
-      background: rgba(5, 5, 6, 0.85);
+      background: #000000;
       position: sticky;
       top: 0;
       z-index: 30;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    }
-    @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-      .glass-header {
-        background: rgba(5, 5, 6, 0.62);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-      }
+      border-bottom: 1px solid #1C1C1E;
     }
 
     /* Floating search button sizing */
@@ -218,28 +172,16 @@
       height: 64px;
       border-radius: 999px;
       z-index: 110;
-      background: rgba(28, 28, 30, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: #1C1C1E;
+      border: 1px solid #2C2C2E;
       box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
-    }
-    @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-      .mobile-search-btn {
-        background: rgba(28, 28, 30, 0.62);
-        backdrop-filter: blur(28px) saturate(180%);
-        -webkit-backdrop-filter: blur(28px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.16);
-        box-shadow: 
-          0 12px 40px rgba(0, 0, 0, 0.55), 
-          inset 0 1px 0 rgba(255, 255, 255, 0.22), 
-          inset 0 -1px 0 rgba(255, 255, 255, 0.06);
-      }
     }
     .mobile-search-btn::before {
       content: "";
       position: absolute;
       inset: 1px;
       border-radius: inherit;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03) 40%, rgba(255, 255, 255, 0));
+      background: transparent;
       pointer-events: none;
       z-index: 1;
     }
@@ -252,19 +194,19 @@
       }
     }
 
-    /* Premium Glass Inputs */
+    /* Premium Inputs */
     .glass-input {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #1C1C1E;
+      border: 1px solid #2C2C2E;
       border-radius: 16px;
       color: #ffffff;
       outline: none;
       transition: all 180ms ease;
     }
     .glass-input:focus {
-      background: rgba(255, 255, 255, 0.07);
+      background: #2C2C2E;
       border-color: #3B8DFF;
-      box-shadow: 0 0 12px rgba(59, 141, 255, 0.25);
+      box-shadow: 0 0 12px rgba(59, 141, 255, 0.15);
     }
 
     /* Component Card Interactions */
@@ -275,10 +217,8 @@
       transform: scale(0.96) !important;
     }
     .component-card:hover {
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 141, 255, 0.1);
-    }
-    .glass-urgent.component-card:hover {
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 70, 80, 0.15);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      border-color: #3F3F46;
     }
 
     /* Popover entrance animation */
@@ -288,6 +228,9 @@
     }
 
     @keyframes popoverEntrance {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
       from { transform: scale(0.95); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
@@ -789,8 +732,184 @@
       }
     }
 
-    // Helper to render icon based on name using Vanilla Lucide
-    const IconComponent = ({ name, className = 'w-5 h-5' }) => {
+    // Custom inline SVGs for motorcycle components
+    const CUSTOM_ICONS = {
+      filterUdara: (className) => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <rect x="2" y="4" width="7" height="16" rx="1.5" />
+          <line x1="5.5" y1="4" x2="5.5" y2="20" />
+          <line x1="2" y1="8" x2="9" y2="8" />
+          <line x1="2" y1="12" x2="9" y2="12" />
+          <line x1="2" y1="16" x2="9" y2="16" />
+          <path d="M13 7h5a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-5" />
+          <path d="M13 13h5a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-5" />
+          <line x1="13" y1="9" x2="15" y2="9" />
+          <line x1="13" y1="15" x2="15" y2="15" />
+        </svg>
+      ),
+      battery: (className) => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <rect x="2" y="6" width="20" height="13" rx="2.5" />
+          <line x1="6" y1="3" x2="6" y2="6" />
+          <line x1="18" y1="3" x2="18" y2="6" />
+          <line x1="5" y1="12" x2="9" y2="12" />
+          <line x1="15" y1="12" x2="19" y2="12" />
+          <line x1="17" y1="10" x2="17" y2="14" />
+        </svg>
+      ),
+      coolant: (className) => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="M4 10h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z" />
+          <path d="M6 6h4v4H6z" />
+          <path d="M18 10h1v4h-1" />
+          <path d="M4 14h14" />
+        </svg>
+      ),
+      vbelt: (className) => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <rect x="8" y="2" width="8" height="20" rx="4" transform="rotate(45 12 12)" />
+          <circle cx="9.5" cy="9.5" r="1.2" />
+          <circle cx="12" cy="12" r="1.2" />
+          <circle cx="14.5" cy="14.5" r="1.2" />
+        </svg>
+      ),
+      roller: (className) => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <circle cx="12" cy="12" r="4.5" />
+          <circle cx="12" cy="5" r="2" />
+          <circle cx="18.06" cy="8.5" r="2" />
+          <circle cx="18.06" cy="15.5" r="2" />
+          <circle cx="12" cy="19" r="2" />
+          <circle cx="5.94" cy="15.5" r="2" />
+          <circle cx="5.94" cy="8.5" r="2" />
+        </svg>
+      ),
+      fuelFilter: (className) => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <rect x="6" y="4" width="10" height="11" rx="2" />
+          <line x1="6" y1="8" x2="16" y2="8" />
+          <path d="M16 11h2v2h-2" />
+          <circle cx="11" cy="6" r="0.8" fill="currentColor" />
+          <line x1="5" y1="18" x2="17" y2="18" strokeDasharray="2 2" />
+          <line x1="5" y1="21" x2="17" y2="21" strokeDasharray="2 2" />
+        </svg>
+      ),
+      sparkPlug: (className) => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <line x1="12" y1="3" x2="12" y2="6" />
+          <rect x="10" y="6" width="4" height="6" rx="1" />
+          <line x1="9" y1="8" x2="15" y2="8" />
+          <line x1="9" y1="10" x2="15" y2="10" />
+          <path d="M8 12h8v2H8z" />
+          <rect x="9" y="14" width="6" height="5" />
+          <line x1="9" y1="16" x2="15" y2="16" />
+          <line x1="9" y1="18" x2="15" y2="18" />
+          <path d="M12 19v2h-2" />
+        </svg>
+      ),
+      oilCan: (className) => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="M3 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
+          <path d="M3 14c0-3 3-5 7-5h3V6h-2" />
+          <path d="M13 9l8-4" />
+          <path d="M21 9.5c0 1-0.8 1.5-1.2 1.5s-1.2-0.5-1.2-1.5c0-1 1.2-2 1.2-2s1.2 1 1.2 2z" fill="currentColor" />
+        </svg>
+      ),
+      brakeDisc: (className) => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <circle cx="12" cy="12" r="9" />
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="12" cy="12" r="1.5" />
+          <circle cx="12" cy="6.5" r="0.6" fill="currentColor" />
+          <circle cx="12" cy="17.5" r="0.6" fill="currentColor" />
+          <circle cx="6.5" cy="12" r="0.6" fill="currentColor" />
+          <circle cx="17.5" cy="12" r="0.6" fill="currentColor" />
+          <circle cx="8.1" cy="8.1" r="0.6" fill="currentColor" />
+          <circle cx="15.9" cy="8.1" r="0.6" fill="currentColor" />
+          <circle cx="8.1" cy="15.9" r="0.6" fill="currentColor" />
+          <circle cx="15.9" cy="15.9" r="0.6" fill="currentColor" />
+        </svg>
+      ),
+      brakePad: (className) => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <rect x="4" y="5" width="16" height="14" rx="3" />
+          <line x1="8" y1="9" x2="16" y2="9" strokeWidth="2.5" />
+          <line x1="8" y1="12" x2="16" y2="12" strokeWidth="2.5" />
+          <line x1="8" y1="15" x2="16" y2="15" strokeWidth="2.5" />
+        </svg>
+      ),
+      brakeFluid: (className) => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <circle cx="12" cy="12" r="6" />
+          <path d="M6.5 13.5c1.5-1 2.5-1 4 0s2.5 1 4 0" />
+          <path d="M4 8a8 8 0 0 0 0 8" />
+          <path d="M20 8a8 8 0 0 1 0 8" />
+        </svg>
+      ),
+      oilFilter: (className) => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="M6 7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7z" />
+          <line x1="6" y1="9" x2="18" y2="9" />
+          <line x1="6" y1="15" x2="18" y2="15" />
+          <path d="M12 11c0 1-0.8 1.5-1.2 1.5s-1.2-0.5-1.2-1.5c0-1 1.2-2 1.2-2s1.2 1 1.2 2z" fill="currentColor" />
+        </svg>
+      ),
+      tire: (className) => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <circle cx="12" cy="12" r="9" />
+          <circle cx="12" cy="12" r="5" />
+          <circle cx="12" cy="12" r="1.5" />
+          <line x1="12" y1="3" x2="12" y2="7" />
+          <line x1="12" y1="17" x2="12" y2="21" />
+          <line x1="3" y1="12" x2="7" y2="12" />
+          <line x1="17" y1="12" x2="21" y2="12" />
+          <line x1="5.6" y1="5.6" x2="8.5" y2="8.5" />
+          <line x1="15.5" y1="15.5" x2="18.4" y2="18.4" />
+          <line x1="18.4" y1="5.6" x2="15.5" y2="8.5" />
+          <line x1="8.5" y1="15.5" x2="5.6" y2="18.4" />
+        </svg>
+      )
+    };
+
+    const getCustomIcon = (name = '', componentName = '') => {
+      const normalizedName = (name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const normalizedComp = (componentName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      
+      // Match by componentName first
+      if (normalizedComp.includes('filterudara')) return CUSTOM_ICONS.filterUdara;
+      if (normalizedComp.includes('aki')) return CUSTOM_ICONS.battery;
+      if (normalizedComp.includes('cairanpendingin') || normalizedComp.includes('radiator') || normalizedComp.includes('pendingin')) return CUSTOM_ICONS.coolant;
+      if (normalizedComp.includes('vbelt') || normalizedComp.includes('tensioner')) return CUSTOM_ICONS.vbelt;
+      if (normalizedComp.includes('roller')) return CUSTOM_ICONS.roller;
+      if (normalizedComp.includes('filterbahanbakar') || normalizedComp.includes('filterbensin')) return CUSTOM_ICONS.fuelFilter;
+      if (normalizedComp.includes('busi')) return CUSTOM_ICONS.sparkPlug;
+      if (normalizedComp.includes('filteroli')) return CUSTOM_ICONS.oilFilter;
+      if (normalizedComp.includes('olimesin') || normalizedComp.includes('olitransmisi') || normalizedComp.includes('olishock') || normalizedComp.includes('oli')) return CUSTOM_ICONS.oilCan;
+      if (normalizedComp.includes('cakramrem') || normalizedComp.includes('cakram')) return CUSTOM_ICONS.brakeDisc;
+      if (normalizedComp.includes('kampasrem')) return CUSTOM_ICONS.brakePad;
+      if (normalizedComp.includes('minyakrem')) return CUSTOM_ICONS.brakeFluid;
+      if (normalizedComp.includes('ban')) return CUSTOM_ICONS.tire;
+
+      // Fallback to name-based matching
+      if (normalizedName === 'compass' && normalizedComp === '') return CUSTOM_ICONS.filterUdara;
+      if (normalizedName === 'zap') return CUSTOM_ICONS.battery;
+      if (normalizedName === 'thermometer') return CUSTOM_ICONS.coolant;
+      if (normalizedName === 'award') return CUSTOM_ICONS.vbelt;
+      if (normalizedName === 'fuel') return CUSTOM_ICONS.fuelFilter;
+      if (normalizedName === 'droplet') return CUSTOM_ICONS.oilCan;
+      if (normalizedName === 'disc') return CUSTOM_ICONS.brakeDisc;
+      if (normalizedName === 'circledot') return CUSTOM_ICONS.roller;
+
+      return null;
+    };
+
+    // Helper to render icon based on name using Vanilla Lucide or Custom SVG
+    const IconComponent = ({ name, className = 'w-5 h-5', componentName = '' }) => {
+      const customIconFn = getCustomIcon(name, componentName);
+      if (customIconFn) {
+        return customIconFn(className);
+      }
+      
       const iconName = name || 'Wrench';
       const kebabName = iconName
         .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
@@ -1086,12 +1205,14 @@
 
       // Predefined additional standard components
       const STANDARD_ADDABLE_COMPONENTS = [
-        { name: 'Kampas Rem Depan', icon: 'Disc', intervalKm: 15000, intervalMonths: 18, warning: 'Pengereman tidak pakem, merusak piringan cakram, membahayakan keselamatan.', advice: 'Ganti kampas rem segera jika ketebalan di bawah 1.5mm.' },
-        { name: 'Kampas Rem Belakang', icon: 'Disc', intervalKm: 15000, intervalMonths: 18, warning: 'Rem tromol/cakram belakang blong, memperpanjang jarak henti motor.', advice: 'Jaga kebersihan area tromol belakang dari debu kampas rem.' },
-        { name: 'Minyak Rem', icon: 'Droplet', intervalKm: 20000, intervalMonths: 24, warning: 'Gelembung udara masuk sistem rem (masuk angin), rem blong mendadak.', advice: 'Ganti minyak rem jika warnanya sudah berubah menjadi cokelat keruh.' },
-        { name: 'Cairan Aki', icon: 'Zap', intervalKm: 6000, intervalMonths: 6, warning: 'Aki basah cepat soak dan sel aki rusak permanen jika air di bawah garis lower limit.', advice: 'Rutin cek ketinggian air aki basah dan isi hanya dengan air aki suling.' },
-        { name: 'Air Radiator Cadangan', icon: 'Thermometer', intervalKm: 6000, intervalMonths: 6, warning: 'Radiator kekurangan air akibat tangki cadangan kosong, picu overheat.', advice: 'Isi tabung reservoir coolant hingga garis batas upper limit.' },
-        { name: 'Gear & Rantai Roda', icon: 'Settings', intervalKm: 20000, intervalMonths: 24, warning: 'Rantai berisik, kaku, gir aus runcing, berisiko rantai putus/lepas.', advice: 'Lumasi rantai secara rutin dengan chain lube dan setel ketegangannya.' }
+        { name: 'Cakram Rem', icon: 'Disc', intervalKm: 25000, intervalMonths: 24, warning: 'Cakram tipis/bergelombang membuat rem bergetar dan tidak pakem, merusak caliper.', advice: 'Cek ketebalan cakram rem secara berkala.', priority: true },
+        { name: 'Kampas Rem', icon: 'Disc', intervalKm: 15000, intervalMonths: 18, warning: 'Pengereman tidak pakem, merusak piringan cakram, membahayakan keselamatan.', advice: 'Ganti kampas rem segera jika ketebalan di bawah 1.5mm.', priority: true },
+        { name: 'Minyak Rem', icon: 'Droplet', intervalKm: 20000, intervalMonths: 24, warning: 'Gelembung udara masuk sistem rem (masuk angin), rem blong mendadak.', advice: 'Ganti minyak rem jika warnanya sudah berubah menjadi cokelat keruh.', priority: true },
+        { name: 'Oli Mesin', icon: 'Droplet', intervalKm: 4000, intervalMonths: 4, warning: 'Gesekan kasar merusak piston dan silinder, memicu overhead dan turun mesin.', advice: 'Ganti oli mesin secara berkala sesuai ketentuan.', priority: false },
+        { name: 'Filter Oli Mesin', icon: 'Disc', intervalKm: 8000, intervalMonths: 8, warning: 'Kotoran menyumbat saluran oli, memicu ausnya silinder head.', advice: 'Ganti filter oli secara berkala demi oli yang lebih bersih.', priority: true },
+        { name: 'Ban', icon: 'CircleDot', intervalKm: 20000, intervalMonths: 24, warning: 'Ban gundul licin di jalan basah dan rawan bocor.', advice: 'Periksa alur ban berkala demi traksi yang baik.', priority: true },
+        { name: 'Filter Udara', icon: 'Compass', intervalKm: 12000, intervalMonths: 12, warning: 'Aliran udara tersumbat menyebabkan bensin boros.', advice: 'Ganti filter udara berkala agar tarikan mesin tetap responsif.', priority: false },
+        { name: 'Aki 12V', icon: 'Zap', intervalKm: 24000, intervalMonths: 24, warning: 'Starter elektrik macet kelistrikan drop.', advice: 'Ganti aki jika voltase rendah di bawah 12V.', priority: false }
       ];
 
       // ----------------------------------------------------
@@ -2594,7 +2715,7 @@
                     >
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-full bg-white/[0.04] text-white/80 flex items-center justify-center">
-                          <IconComponent name={c.icon} className="w-3.5 h-3.5" />
+                          <IconComponent name={c.icon} className="w-3.5 h-3.5" componentName={c.name} />
                         </div>
                         <div>
                           <h5 className="font-bold text-xs text-white group-hover:text-iosBlue transition-colors">{c.name}</h5>
@@ -2734,7 +2855,7 @@
                     >
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-full bg-iosRed/20 flex items-center justify-center text-iosRed">
-                          <IconComponent name={c.icon} className="w-4 h-4" />
+                          <IconComponent name={c.icon} className="w-4 h-4" componentName={c.name} />
                         </div>
                         <span className="text-sm font-bold text-white">{c.name}</span>
                       </div>
@@ -2795,83 +2916,67 @@
                       setDetailTab('saat-ini');
                     }
                   }}
-                  className={`component-card relative rounded-[32px] p-5 flex flex-col justify-between min-h-[185px] cursor-pointer select-none ${
+                  className={`component-card relative rounded-[24px] p-5 flex flex-col justify-between min-h-[190px] cursor-pointer select-none border transition-all ${
                     isSelected 
-                      ? 'bg-iosBlue/20 border border-iosBlue shadow-[0_0_15px_rgba(59,141,255,0.22)]' 
+                      ? 'bg-iosBlue/10 border-iosBlue shadow-[0_0_15px_rgba(59,141,255,0.15)]' 
                       : status.isUrgent 
-                        ? 'glass-urgent shadow-[0_0_20px_rgba(255,70,80,0.06)]' 
-                        : 'glass'
+                        ? 'bg-[#18181B] border-iosRed/50' 
+                        : 'bg-[#18181B] border-white/[0.06] hover:border-white/[0.12]'
                   }`}
                 >
-                  {/* Urgent warning icon */}
-                  {status.isUrgent && !selectionMode && (
-                    <div className="absolute top-4.5 right-4.5 text-iosRed flex items-center justify-center animate-bounce">
-                      <AlertTriangle className="w-5.5 h-5.5 fill-iosRed/15" />
+                  {/* Top Row: Info & Name */}
+                  <div className="flex justify-between items-start w-full">
+                    <div className="flex flex-col text-left max-w-[80%]">
+                      <span className="text-[13px] font-bold text-white leading-tight truncate">{c.name}</span>
+                      <span className={`text-[11px] font-bold mt-0.5 ${status.isUrgent ? 'text-iosRed font-extrabold' : 'text-iosGray'}`}>
+                        {status.isUrgent ? 'Perlu Servis' : `${status.remainingKm.toLocaleString('id-ID')} km`}
+                      </span>
                     </div>
-                  )}
-
-                  {/* Selection Checkbox */}
-                  {selectionMode && (
-                    <div className="absolute top-4.5 right-4.5 z-10">
-                      <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all ${
-                        isSelected 
-                          ? 'bg-iosBlue border-iosBlue text-white' 
-                          : 'border-[#343438] bg-black/40'
-                      }`}>
-                        {isSelected && <Check className="w-4 h-4" />}
-                      </div>
+                    
+                    {/* Top Right Action / Indicator */}
+                    <div className="flex-shrink-0">
+                      {selectionMode ? (
+                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
+                          isSelected 
+                            ? 'bg-iosBlue border-iosBlue text-white' 
+                            : 'border-white/[0.12] bg-black/40'
+                        }`}>
+                          {isSelected && <Check className="w-3 h-3" />}
+                        </div>
+                      ) : status.isUrgent ? (
+                        <AlertTriangle className="w-4 h-4 text-iosRed animate-pulse" />
+                      ) : (
+                        <Info className="w-3.5 h-3.5 text-white/20" />
+                      )}
                     </div>
-                  )}
-
-                  {/* Info details small icon */}
-                  {!selectionMode && !status.isUrgent && (
-                    <div className="absolute top-4.5 right-4.5 text-white/20">
-                      <Info className="w-4 h-4" />
-                    </div>
-                  )}
-
-                  {/* Top: Icon (Large, colored dynamically) */}
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    status.isUrgent 
-                      ? 'bg-iosRed/20 text-iosRed shadow-[0_0_10px_rgba(229,72,77,0.2)]' 
-                      : pct > 0.4
-                        ? 'bg-iosBlue/20 text-iosBlue'
-                        : 'bg-white/[0.06] text-iosGrayLight'
-                  }`}>
-                    <IconComponent name={c.icon} className="w-6 h-6" />
                   </div>
 
-                  {/* Bottom: Info */}
-                  <div className="mt-4 space-y-1 text-left">
-                    <h4 className="font-bold text-sm text-white truncate max-w-[140px]">{c.name}</h4>
-                    <div className="flex flex-col">
-                      <span className={`text-xs font-bold ${
-                        status.isUrgent ? 'text-iosRed font-extrabold' : 'text-iosGray'
-                      }`}>
-                        {status.remainingKm <= 0 ? 'Sisa 0 km' : `Sisa ${status.remainingKm.toLocaleString('id-ID')} km`}
-                      </span>
-                      <span className="text-[10px] text-white/40">
-                        {status.remainingDays <= 0 
-                          ? 'Lewat tenggat' 
-                          : new Date(status.nextServiceDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
-                      </span>
+                  {/* Center: Large SVG Icon */}
+                  <div className="flex justify-center items-center py-2">
+                    <div className={status.isUrgent ? 'text-iosRed' : 'text-zinc-400'}>
+                      <IconComponent name={c.icon} className="w-12 h-12" componentName={c.name} />
                     </div>
+                  </div>
+
+                  {/* Bottom: Action Label */}
+                  <div className="text-center text-[10px] text-zinc-500 font-medium">
+                    Tap untuk atur
                   </div>
                 </div>
               );
             })}
 
-            {/* Custom Component Card (Dashed Border Liquid Glass) */}
+            {/* Custom Component Card (Dashed Border Flat Card) */}
             <div 
               onClick={() => {
                 if (!selectionMode) {
                   setShowAddCustomComponent(true);
                 }
               }}
-              className="component-card glass border-2 border-dashed border-white/[0.08] hover:border-white/[0.2] rounded-[32px] p-5 flex flex-col items-center justify-center min-h-[185px] text-center cursor-pointer select-none"
+              className="component-card bg-[#18181B] border border-dashed border-white/[0.08] hover:border-white/[0.2] rounded-[24px] p-5 flex flex-col items-center justify-center min-h-[190px] text-center cursor-pointer select-none"
             >
               <div className="w-10 h-10 rounded-full bg-white/[0.04] flex items-center justify-center text-white/40 group-hover:text-iosBlue group-hover:bg-iosBlue/10 transition-colors mb-2">
-                <Plus className="w-5.5 h-5.5" />
+                <Plus className="w-5 h-5" />
               </div>
               <span className="text-xs font-bold text-white/50 group-hover:text-white transition-colors">Komponen Kustom</span>
             </div>
@@ -3419,7 +3524,7 @@
                         className="glass rounded-[28px] p-4 flex flex-col justify-between h-[120px]"
                       >
                         <div className="w-8 h-8 rounded-full bg-white/[0.04] text-white/80 flex items-center justify-center">
-                          <IconComponent name={c.icon} className="w-4 h-4" />
+                          <IconComponent name={c.icon} className="w-4 h-4" componentName={c.name} />
                         </div>
                         <div className="space-y-0.5 mt-2 text-left">
                           <h4 className="font-bold text-xs text-white truncate">{c.name}</h4>
@@ -3753,7 +3858,7 @@
                   <div className={`w-16 h-16 rounded-3xl mx-auto flex items-center justify-center shadow-lg ${
                     status.isUrgent ? 'bg-iosRed/20 text-iosRed' : 'bg-iosBlue/15 text-iosBlue'
                   }`}>
-                    <IconComponent name={comp.icon} className="w-8 h-8" />
+                    <IconComponent name={comp.icon} className="w-8 h-8" componentName={comp.name} />
                   </div>
                   <div>
                     <h4 className="text-xl font-bold text-white">{comp.name}</h4>
@@ -3783,132 +3888,178 @@
                 {detailTab === 'saat-ini' ? (
                   <div className="space-y-5">
                     
-                    <div className="bg-[#202124] border border-white/[0.04] rounded-ios p-4 flex gap-3 items-start">
-                      <div className="w-8 h-8 rounded-full bg-iosYellow/15 flex items-center justify-center text-iosYellow flex-shrink-0 mt-0.5">
-                        <Sparkles className="w-4 h-4 fill-iosYellow/15" />
+                    {/* Saran Perawatan Card */}
+                    <div className="bg-[#18181B] border border-white/[0.04] rounded-2xl p-4 flex gap-3.5 items-start">
+                      <div className="w-10 h-10 rounded-full bg-[#0A84FF]/10 flex items-center justify-center text-iosBlue flex-shrink-0 mt-0.5 shadow-sm">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-iosBlue">
+                          <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5 5 0 0 0 8 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5" />
+                          <line x1="9" y1="18" x2="15" y2="18" />
+                          <line x1="10" y1="22" x2="14" y2="22" />
+                        </svg>
                       </div>
                       <div className="space-y-1">
-                        <h5 className="font-bold text-xs text-white">Saran Perawatan</h5>
-                        <p className="text-[10px] text-iosGray leading-relaxed">{comp.advice}</p>
-                        <a href="#" onClick={(e) => { e.preventDefault(); alert(comp.warning); }} className="text-[10px] text-iosBlue font-bold block pt-1 hover:underline">Learn more...</a>
+                        <h5 className="font-bold text-sm text-white">Saran Perawatan</h5>
+                        <p className="text-xs text-zinc-400 leading-relaxed">{comp.advice}</p>
+                        <a href="#" onClick={(e) => { e.preventDefault(); alert(comp.warning); }} className="text-xs text-iosBlue font-bold block pt-1 hover:underline">Learn more...</a>
                       </div>
                     </div>
 
-                    <div className="bg-black/25 border border-white/[0.04] rounded-ios p-5 space-y-4">
-                      <h5 className="font-bold text-xs text-white uppercase tracking-wider">Status Masa Pakai</h5>
-                      
+                    {/* Status Masa Pakai Card */}
+                    <div className="bg-[#18181B] border border-white/[0.06] rounded-2xl p-5 space-y-4">
+                      {/* Mileage Metric */}
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs font-semibold">
-                          <span className="text-iosGray">Jarak Tempuh</span>
-                          <span className="text-white">{status.elapsedKm.toLocaleString('id-ID')} km / {comp.intervalKm.toLocaleString('id-ID')} km</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-zinc-500 font-bold">/\</span>
+                            <span className="text-zinc-400">Sisa Penggunaan:</span>
+                            <span className="text-white font-bold">{status.remainingKm.toLocaleString('id-ID')} km</span>
+                          </div>
+                          <span className="text-white font-bold">{Math.max(0, Math.min(100, Math.round((status.remainingKm / comp.intervalKm) * 100)))}%</span>
                         </div>
-                        <ProgressBar percent={distanceProgress} color={status.isUrgent ? 'bg-iosRed' : distanceProgress > 75 ? 'bg-iosYellow' : 'bg-iosBlue'} />
+                        <ProgressBar percent={(status.remainingKm / comp.intervalKm) * 100} color={status.isUrgent ? 'bg-iosRed' : (status.remainingKm / comp.intervalKm) * 100 < 25 ? 'bg-iosYellow' : 'bg-iosBlue'} />
                       </div>
 
+                      {/* Time Metric */}
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs font-semibold">
-                          <span className="text-iosGray">Waktu Penggunaan</span>
-                          <span className="text-white">{monthsElapsed} bln / {comp.intervalMonths} bln</span>
+                          <div className="flex items-center gap-1.5">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5 text-zinc-500">
+                              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                              <line x1="16" y1="2" x2="16" y2="6" />
+                              <line x1="8" y1="2" x2="8" y2="6" />
+                              <line x1="3" y1="10" x2="21" y2="10" />
+                            </svg>
+                            <span className="text-zinc-400">Terbaik Hingga</span>
+                            <span className="text-white font-bold">
+                              {new Date(status.nextServiceDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} · {Math.max(0, status.remainingDays)} hr
+                            </span>
+                          </div>
+                          <span className="text-white font-bold">{Math.max(0, Math.min(100, Math.round((status.remainingDays / (comp.intervalMonths * 30)) * 100)))}%</span>
                         </div>
-                        <ProgressBar percent={timeProgress} color={status.isUrgent ? 'bg-iosRed' : timeProgress > 75 ? 'bg-iosYellow' : 'bg-iosBlue'} />
+                        <ProgressBar percent={(status.remainingDays / (comp.intervalMonths * 30)) * 100} color={status.isUrgent ? 'bg-iosRed' : (status.remainingDays / (comp.intervalMonths * 30)) * 100 < 25 ? 'bg-iosYellow' : 'bg-iosBlue'} />
                       </div>
 
-                      <hr className="border-white/[0.04] my-2" />
-
-                      <div className="flex flex-col text-center pt-1.5 space-y-0.5">
-                        <span className={`text-base font-extrabold ${status.isUrgent ? 'text-iosRed' : 'text-iosGreen'}`}>
-                          {status.remainingKm <= 0 ? 'Sisa Penggunaan: 0 km' : `Sisa Penggunaan: ${status.remainingKm.toLocaleString('id-ID')} km`}
-                        </span>
-                        <span className="text-[10px] text-iosGray">
-                          Terbaik Hingga {new Date(status.nextServiceDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} · {status.remainingDays <= 0 ? '0' : status.remainingDays} hari lagi
-                        </span>
+                      {/* Alert Info Box */}
+                      <div className="bg-black/25 border border-white/[0.02] rounded-xl p-3.5 flex gap-2.5 items-start mt-2">
+                        <Info className="w-4 h-4 text-zinc-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-zinc-500 leading-relaxed">
+                          Kami meninjau metrik terendah di dashboard untuk menentukan kondisi komponen.
+                        </p>
                       </div>
-                    </div>
 
-                    {showLifespanAdjustment ? (
-                      <div className="bg-black/40 border border-white/[0.06] rounded-ios p-5 space-y-4">
-                        <h5 className="font-bold text-xs text-white">Sesuaikan Batas Interval & Status</h5>
-                        
-                        <div className="space-y-2">
-                          <label className="text-[10px] text-iosGray uppercase tracking-wider font-bold">Interval Servis Jarak (km)</label>
-                          <input 
-                            type="number"
-                            value={comp.intervalKm}
-                            onChange={(e) => handleUpdateComponentLifespan(comp.id, e.target.value, comp.intervalMonths, comp.lastServiceOdo, comp.lastServiceDate)}
-                            className="w-full bg-black/40 border border-white/[0.08] rounded-ios-sm py-2 px-3 text-xs font-semibold text-white outline-none"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px] text-iosGray font-bold">
-                            <span>Sisa Jarak</span>
-                            <span>{status.remainingKm.toLocaleString('id-ID')} km</span>
+                      {/* Sesuaikan Masa Pakai Accordion Section inside Status Card */}
+                      {showLifespanAdjustment ? (
+                        <div className="border-t border-white/[0.04] pt-4 mt-2 space-y-4 text-left">
+                          {/* Distance Interval Config */}
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <span className="text-xs font-bold text-white block">Interval Servis</span>
+                                <span className="text-[10px] text-zinc-500">Total jarak (km) antar setiap servis. Direkomendasikan: 2.000 km</span>
+                              </div>
+                              <div className="relative w-24">
+                                <input 
+                                  type="number"
+                                  value={comp.intervalKm}
+                                  onChange={(e) => handleUpdateComponentLifespan(comp.id, e.target.value, comp.intervalMonths, comp.lastServiceOdo, comp.lastServiceDate)}
+                                  className="w-full bg-black/40 border border-white/[0.08] rounded-xl py-1.5 px-2.5 text-xs font-bold text-white text-right outline-none pr-8"
+                                />
+                                <span className="absolute right-2.5 top-1.5 text-[10px] text-zinc-500">km</span>
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[10px] text-zinc-500">
+                                <span>Sesuaikan sisa penggunaan agar cocok dengan kondisi komponen Anda.</span>
+                                <span>{status.remainingKm.toLocaleString('id-ID')} km</span>
+                              </div>
+                              <input 
+                                type="range"
+                                min="0"
+                                max={comp.intervalKm}
+                                value={status.remainingKm}
+                                onChange={(e) => {
+                                  const inputRemaining = parseInt(e.target.value, 10);
+                                  const simulatedLastServiceOdo = currentVehicle.odo - (comp.intervalKm - inputRemaining);
+                                  handleUpdateComponentLifespan(comp.id, comp.intervalKm, comp.intervalMonths, simulatedLastServiceOdo, comp.lastServiceDate);
+                                }}
+                                className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-iosBlue"
+                              />
+                            </div>
                           </div>
-                          <input 
-                            type="range"
-                            min="0"
-                            max={comp.intervalKm}
-                            value={status.remainingKm}
-                            onChange={(e) => {
-                              const inputRemaining = parseInt(e.target.value, 10);
-                              const simulatedLastServiceOdo = currentVehicle.odo - (comp.intervalKm - inputRemaining);
-                              handleUpdateComponentLifespan(comp.id, comp.intervalKm, comp.intervalMonths, simulatedLastServiceOdo, comp.lastServiceDate);
-                            }}
-                            className="w-full accent-iosBlue"
-                          />
-                        </div>
 
-                        <div className="space-y-2">
-                          <label className="text-[10px] text-iosGray uppercase tracking-wider font-bold">Interval Waktu (bulan)</label>
-                          <input 
-                            type="number"
-                            value={comp.intervalMonths}
-                            onChange={(e) => handleUpdateComponentLifespan(comp.id, comp.intervalKm, e.target.value, comp.lastServiceOdo, comp.lastServiceDate)}
-                            className="w-full bg-black/40 border border-white/[0.08] rounded-ios-sm py-2 px-3 text-xs font-semibold text-white outline-none"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px] text-iosGray font-bold">
-                            <span>Sisa Waktu</span>
-                            <span>{Math.max(0, status.remainingDays)} hari</span>
+                          {/* Time Interval Config */}
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <span className="text-xs font-bold text-white block">Interval Waktu</span>
+                                <span className="text-[10px] text-zinc-500">Total durasi waktu antar setiap servis. Direkomendasikan: 2 bulan</span>
+                              </div>
+                              <div className="relative w-20">
+                                <input 
+                                  type="number"
+                                  value={comp.intervalMonths}
+                                  onChange={(e) => handleUpdateComponentLifespan(comp.id, comp.intervalKm, e.target.value, comp.lastServiceOdo, comp.lastServiceDate)}
+                                  className="w-full bg-black/40 border border-white/[0.08] rounded-xl py-1.5 px-2.5 text-xs font-bold text-white text-right outline-none pr-7"
+                                />
+                                <span className="absolute right-2.5 top-1.5 text-[10px] text-zinc-500">bln</span>
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[10px] text-zinc-500">
+                                <span>Sesuaikan sisa penggunaan agar cocok dengan kondisi komponen Anda.</span>
+                                <span>{Math.max(0, status.remainingDays)} hari</span>
+                              </div>
+                              <input 
+                                type="range"
+                                min="0"
+                                max={comp.intervalMonths * 30}
+                                value={Math.max(0, status.remainingDays)}
+                                onChange={(e) => {
+                                  const inputRemainingDays = parseInt(e.target.value, 10);
+                                  const simulatedLastServiceDate = new Date(CURRENT_DATE);
+                                  simulatedLastServiceDate.setDate(simulatedLastServiceDate.getDate() - (comp.intervalMonths * 30 - inputRemainingDays));
+                                  const dateStr = simulatedLastServiceDate.toISOString().split('T')[0];
+                                  handleUpdateComponentLifespan(comp.id, comp.intervalKm, comp.intervalMonths, comp.lastServiceOdo, dateStr);
+                                }}
+                                className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-iosBlue"
+                              />
+                            </div>
                           </div>
-                          <input 
-                            type="range"
-                            min="0"
-                            max={comp.intervalMonths * 30}
-                            value={Math.max(0, status.remainingDays)}
-                            onChange={(e) => {
-                              const inputRemainingDays = parseInt(e.target.value, 10);
-                              const simulatedLastServiceDate = new Date(CURRENT_DATE);
-                              simulatedLastServiceDate.setDate(simulatedLastServiceDate.getDate() - (comp.intervalMonths * 30 - inputRemainingDays));
-                              const dateStr = simulatedLastServiceDate.toISOString().split('T')[0];
-                              handleUpdateComponentLifespan(comp.id, comp.intervalKm, comp.intervalMonths, comp.lastServiceOdo, dateStr);
-                            }}
-                            className="w-full accent-iosBlue"
-                          />
-                        </div>
 
+                          <div className="text-[10px] text-zinc-500 leading-relaxed bg-black/10 p-2.5 rounded-xl border border-white/[0.02]">
+                            Masa pakai komponen adalah estimasi umum. Rujuk manual pabrik untuk informasi akurat.
+                          </div>
+
+                          <button 
+                            type="button"
+                            onClick={() => setShowLifespanAdjustment(false)}
+                            className="w-full flex items-center justify-center gap-1 bg-zinc-800 hover:bg-zinc-700 py-3 rounded-xl font-bold text-xs text-white transition-colors"
+                          >
+                            Sembunyikan Pengaturan
+                            <ChevronDown className="w-4.5 h-4.5 transform rotate-180" />
+                          </button>
+                        </div>
+                      ) : (
                         <button 
                           type="button"
-                          onClick={() => setShowLifespanAdjustment(false)}
-                          className="w-full text-center text-xs font-bold text-iosBlue hover:underline pt-2 block"
+                          onClick={() => setShowLifespanAdjustment(true)}
+                          className="w-full flex items-center justify-center gap-1 bg-[#27272A] hover:bg-[#3F3F46] text-iosBlue py-3.5 rounded-xl font-bold text-xs transition-colors"
                         >
-                          Sembunyikan Pengaturan
+                          Sesuaikan Masa Pakai
+                          <ChevronDown className="w-4.5 h-4.5" />
                         </button>
-                      </div>
-                    ) : (
-                      <button 
-                        type="button"
-                        onClick={() => setShowLifespanAdjustment(true)}
-                        className="w-full bg-white/[0.04] border border-white/[0.06] text-white py-3.5 rounded-ios font-bold text-xs hover:bg-white/[0.08]"
-                      >
-                        Sesuaikan Masa Pakai
-                      </button>
-                    )}
+                      )}
+                    </div>
 
-                    <div className="bg-[#202124] border border-white/[0.04] rounded-ios p-4 space-y-2">
-                      <span className="text-xs font-bold text-white">Catatan Komponen</span>
+                    {/* Catatan Card */}
+                    <div className="bg-[#18181B] border border-white/[0.04] rounded-2xl p-4.5 space-y-3">
+                      <div className="flex items-center gap-2 text-white">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4.5 h-4.5 text-zinc-400">
+                          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                          <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                        <span className="text-xs font-bold uppercase tracking-wider">Catatan</span>
+                      </div>
                       <textarea 
                         placeholder="Tambah catatan tentang komponen ini..."
                         value={comp.notes || ''}
@@ -3919,7 +4070,7 @@
                             return { ...prev, [activeVehicleId]: comps };
                           });
                         }}
-                        className="w-full bg-black/40 border border-white/[0.06] rounded-ios-sm p-3 text-xs text-white placeholder-white/20 outline-none resize-none h-16"
+                        className="w-full bg-black/35 border border-white/[0.06] rounded-xl p-3 text-xs text-white placeholder-zinc-600 outline-none resize-none h-24 focus:border-iosBlue focus:ring-1 focus:ring-iosBlue transition-all"
                       ></textarea>
                     </div>
 
@@ -4381,7 +4532,7 @@
                           <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
                             isSelected ? 'bg-iosBlue text-white' : 'bg-white/[0.06] text-iosGray'
                           }`}>
-                            <IconComponent name={c.icon} className="w-3 h-3" />
+                            <IconComponent name={c.icon} className="w-3 h-3" componentName={c.name} />
                           </div>
                           <span className="truncate text-[11px]">{c.name}</span>
                         </div>
@@ -4505,11 +4656,14 @@
       // 10.5 Add Standard Component List Modal
       const renderAddStandardComponentListModal = () => (
         <ModalWrapper isOpen={showAddStandardList} onClose={() => setShowAddStandardList(false)}>
-          <div className="w-full flex-1 flex flex-col overflow-hidden text-left">
+          <div className="w-full flex-1 flex flex-col overflow-hidden text-left bg-[#1C1C1E]">
             <div className="w-10 h-1 bg-white/20 rounded-full mx-auto my-3 md:hidden"></div>
 
             <div className="px-5 pb-3 pt-2 flex items-center justify-between border-b border-white/[0.06]">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Pilih Komponen Standar</h3>
+              <div className="flex items-center gap-1 cursor-pointer" onClick={() => setShowAddStandardList(false)}>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider">Tambah Komponen</h3>
+                <ChevronDown className="w-4 h-4 text-iosBlue transform rotate-180" />
+              </div>
               <button 
                 type="button"
                 onClick={() => setShowAddStandardList(false)}
@@ -4519,12 +4673,13 @@
               </button>
             </div>
 
-            <div className="p-5 space-y-3 overflow-y-auto flex-1 text-xs">
+            <div className="p-5 space-y-3 overflow-y-auto flex-1 text-xs no-scrollbar">
               <p className="text-iosGray text-xs pb-2">Pilih komponen standar berikut untuk ditambahkan ke daftar pemantauan kendaraan Anda:</p>
               
-              <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-4">
                 {STANDARD_ADDABLE_COMPONENTS.map((comp, idx) => {
                   const exists = currentComponents.some(c => c.name.toLowerCase() === comp.name.toLowerCase());
+                  
                   return (
                     <div 
                       key={idx}
@@ -4532,29 +4687,56 @@
                         if (!exists) {
                           setCurrentComponentForm(comp);
                           setShowAddStandardList(false);
+                        } else {
+                          const existingComp = currentComponents.find(c => c.name.toLowerCase() === comp.name.toLowerCase());
+                          if (existingComp) {
+                            setDetailComponentId(existingComp.id);
+                            setDetailTab('saat-ini');
+                            setShowAddStandardList(false);
+                          }
                         }
                       }}
-                      className={`p-3.5 rounded-[20px] border flex items-center justify-between transition-all ${
+                      className={`component-card relative rounded-[24px] p-4 flex flex-col justify-between min-h-[185px] cursor-pointer select-none border transition-all ${
                         exists 
-                          ? 'bg-white/[0.02] border-white/[0.04] opacity-50 cursor-not-allowed' 
-                          : 'bg-[#1C1C1E] border-white/[0.06] hover:border-iosBlue hover:bg-white/[0.02] cursor-pointer'
+                          ? 'bg-[#18181B] border-white/[0.04] opacity-70' 
+                          : 'bg-[#18181B] border-white/[0.06] hover:border-white/[0.12]'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-iosBlue/10 text-iosBlue flex items-center justify-center flex-shrink-0">
-                          <IconComponent name={comp.icon} className="w-4.5 h-4.5" />
-                        </div>
+                      {/* Top Row: Star & Info Circle */}
+                      <div className="flex justify-between items-center w-full">
                         <div>
-                          <h4 className="font-bold text-xs text-white">{comp.name}</h4>
-                          <span className="text-[10px] text-iosGray">Interval: {comp.intervalKm.toLocaleString('id-ID')} km / {comp.intervalMonths} bulan</span>
+                          {comp.priority ? (
+                            <Star className={`w-5 h-5 ${exists ? 'fill-zinc-600 text-zinc-600' : 'fill-iosYellow text-iosYellow'}`} />
+                          ) : (
+                            <Star className="w-5 h-5 text-zinc-700" />
+                          )}
+                        </div>
+                        <Info className="w-3.5 h-3.5 text-white/20" />
+                      </div>
+
+                      {/* Center: Large SVG Icon */}
+                      <div className="flex flex-col items-center py-2">
+                        <div className="text-zinc-400">
+                          <IconComponent name={comp.icon} className="w-12 h-12" componentName={comp.name} />
+                        </div>
+                        <h4 className="font-bold text-xs text-white text-center mt-2.5 leading-tight truncate w-full">{comp.name}</h4>
+                      </div>
+
+                      {/* Badge & Bottom Action Text */}
+                      <div className="space-y-2">
+                        {comp.priority && (
+                          <div className={`text-[9px] font-bold py-1 px-3.5 rounded-full text-center mx-auto w-fit leading-none ${
+                            exists 
+                              ? 'bg-zinc-800 text-zinc-500' 
+                              : 'bg-[#0A84FF] text-white'
+                          }`}>
+                            Paling Penting
+                          </div>
+                        )}
+                        <div className="text-center text-[10px] text-zinc-500 font-medium">
+                          {exists ? 'Tap untuk lihat' : 'Tap untuk atur'}
                         </div>
                       </div>
-                      
-                      {exists ? (
-                        <span className="text-[9px] bg-white/[0.06] text-iosGray px-2 py-0.5 rounded-full">Sudah Ada</span>
-                      ) : (
-                        <ChevronRight className="w-4 h-4 text-iosGray" />
-                      )}
                     </div>
                   );
                 })}
@@ -4568,7 +4750,7 @@
                   setShowAddStandardList(false);
                   setShowAddCustomComponent(true);
                 }}
-                className="w-full bg-iosBlue/15 hover:bg-iosBlue/25 text-iosBlue py-3 rounded-full font-bold text-xs text-center active:scale-95 transition-transform"
+                className="w-full bg-[#27272A] hover:bg-[#3F3F46] text-iosBlue py-3.5 rounded-xl font-bold text-xs text-center active:scale-95 transition-transform"
               >
                 + Buat Komponen Kustom
               </button>
