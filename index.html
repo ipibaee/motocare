@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
@@ -3525,7 +3525,7 @@ function App() {
             <div className="glass-card rounded-[28px] p-10 text-center space-y-4">
               <p className="text-xs text-iosGray leading-relaxed">Belum ada komponen terdaftar untuk kendaraan ini.</p>
               <button 
-                onClick={() => setShowAddStandardList(true)}
+                onClick={() => setActiveModal('addStandardList')}
                 className="bg-iosBlue hover:bg-iosBlue/95 text-white font-bold text-xs py-2.5 px-5 rounded-full active:scale-95 transition-transform"
               >
                 + Tambah Komponen
@@ -3612,7 +3612,7 @@ function App() {
 
           <div className="pt-2">
             <button 
-              onClick={() => setShowAddStandardList(true)}
+              onClick={() => setActiveModal('addStandardList')}
               className="w-full glass text-white hover:bg-white/[0.04] py-4 px-4 rounded-ios flex items-center justify-center gap-2 font-bold text-sm active:scale-98 transition-transform"
             >
               <Plus className="w-4 h-4 text-iosBlue" />
@@ -4811,13 +4811,13 @@ function App() {
 
   // Add standard component list modal
   const renderAddStandardComponentListModal = () => (
-    <ModalWrapper isOpen={showAddStandardList} onClose={() => setShowAddStandardList(false)}>
+    <ModalWrapper isOpen={activeModal === 'addStandardList'} onClose={() => setActiveModal(null)}>
       <div className="w-full flex-1 flex flex-col overflow-hidden text-left bg-[#1C1C1E]">
         <div className="px-5 pb-3 pt-2 flex items-center justify-between border-b border-white/[0.06]">
           <h3 className="text-sm font-bold text-white uppercase tracking-wider">Tambah Komponen Standar</h3>
           <button 
             type="button" 
-            onClick={() => setShowAddStandardList(false)}
+            onClick={() => setActiveModal(null)}
             className="w-7 h-7 bg-white/[0.06] rounded-full flex items-center justify-center text-iosGray hover:text-white flex-shrink-0"
           >
             <X className="w-4 h-4" />
@@ -4835,7 +4835,7 @@ function App() {
                   onClick={() => {
                     if (!exists) {
                       setCurrentComponentForm(comp);
-                      setShowAddStandardList(false);
+                      setActiveModal(null);
                     }
                   }}
                   className={`component-card relative rounded-[24px] p-4 flex flex-col justify-between min-h-[185px] cursor-pointer select-none border transition-all safe-wrap ${
@@ -4869,9 +4869,8 @@ function App() {
           <button 
             type="button"
             onClick={() => {
-              setShowAddStandardList(false);
-              setFormErrors({});
               setActiveModal('addCustomComponent');
+              setFormErrors({});
             }}
             className="w-full bg-[#27272A] hover:bg-[#3F3F46] text-iosBlue py-3.5 rounded-xl font-bold text-xs text-center active:scale-95 transition-transform"
           >
