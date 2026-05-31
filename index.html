@@ -1509,7 +1509,7 @@ function App() {
   const [user, setUser] = React.useState(null);
   const [loadingAuth, setLoadingAuth] = React.useState(true);
   const [guestMode, setGuestMode] = React.useState(() => {
-    return localStorage.getItem('motocare_guest') === 'true';
+    return localStorage.getItem('motocare_guest') !== 'false';
   });
   const [authMode, setAuthMode] = React.useState('login'); // 'login' | 'register' | 'forgot'
   const [authEmail, setAuthEmail] = React.useState('');
@@ -1646,18 +1646,27 @@ function App() {
             console.warn("Supabase auth check timed out (2s). Booting Guest Mode.");
             setUser(null);
             setGuestMode(true);
+            localStorage.setItem('motocare_guest', 'true');
             window.supabaseOfflineFallbackActive = true;
           } else {
             const session = result?.data?.session || null;
             setUser(session?.user || null);
             if (session?.user) {
               setGuestMode(false);
+              localStorage.setItem('motocare_guest', 'false');
+            } else {
+              setGuestMode(true);
+              localStorage.setItem('motocare_guest', 'true');
             }
             
             const { data } = window.supabaseClient.auth.onAuthStateChange((_event, session) => {
               setUser(session?.user || null);
               if (session?.user) {
                 setGuestMode(false);
+                localStorage.setItem('motocare_guest', 'false');
+              } else {
+                setGuestMode(true);
+                localStorage.setItem('motocare_guest', 'true');
               }
             });
             subscription = data.subscription;
@@ -1666,11 +1675,13 @@ function App() {
           console.error("Auth check error:", err);
           setUser(null);
           setGuestMode(true);
+          localStorage.setItem('motocare_guest', 'true');
           window.supabaseOfflineFallbackActive = true;
         }
       } else {
         setUser(null);
         setGuestMode(true);
+        localStorage.setItem('motocare_guest', 'true');
         window.supabaseOfflineFallbackActive = true;
       }
       setLoadingAuth(false);
@@ -6253,6 +6264,20 @@ function App() {
       </div>
     </ModalWrapper>
   );
+
+  // Render Auth Screen or Loading
+  if (loadingAuth) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#050506] text-white">
+        <div className="w-16 h-16 border-4 border-t-iosBlue border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-iosGray text-sm tracking-wide">Memuat MotoCare...</p>
+      </div>
+    );
+  }
+
+  if (!user && !guestMode) {
+    return renderAuthScreen();
+  }
 
   // Main React app return layout
   return (
