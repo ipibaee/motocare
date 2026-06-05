@@ -3,7 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MotoCare - Riwayat Servis Motor & Dashboard SaaS</title>
+  <title>MotoCare - Catatan Servis Motor Pintar</title>
+  <meta name="description" content="Kelola riwayat servis, pantau komponen, dan jadwal perawatan motor dalam satu aplikasi.">
+  <meta name="theme-color" content="#3B82F6">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="MotoCare - Catatan Servis Motor Pintar">
+  <meta property="og:description" content="Kelola riwayat servis, pantau komponen, dan jadwal perawatan motor dalam satu aplikasi.">
+  <meta property="og:image" content="/android-chrome-512x512.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MotoCare - Catatan Servis Motor Pintar">
+  <meta name="twitter:description" content="Kelola riwayat servis, pantau komponen, dan jadwal perawatan motor dalam satu aplikasi.">
+  <meta name="twitter:image" content="/android-chrome-512x512.png">
+
+  <!-- Favicons & Apple Touch Icons -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MotoCare">
   
   <!-- Tailwind CSS Play CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -1532,6 +1558,7 @@ function App() {
   const [authError, setAuthError] = React.useState('');
   const [toast, setToast] = React.useState(null);
   const [profilePic, setProfilePic] = React.useState(null);
+  const [formServiceCost, setFormServiceCost] = React.useState('');
 
   // showToast helper
   const showToast = (message, type = 'success') => {
@@ -3768,7 +3795,7 @@ function App() {
               <span className="text-sm font-extrabold uppercase tracking-wide">PERLU SERVIS BERKALA ({attentionComponents.length})</span>
             </div>
             <p className="text-xs text-white/80 leading-relaxed text-left">Komponen motor Anda berikut telah melampaui batas jarak tempuh atau waktu pemakaian optimal:</p>
-            <div className="space-y-2.5 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
               {attentionComponents.map(c => {
                 const status = getComponentStatus(c, currentVehicle.odo);
                 return (
@@ -3778,16 +3805,16 @@ function App() {
                       setDetailComponentId(c.id);
                       setDetailTab('saat-ini');
                     }}
-                    className="bg-black/35 hover:bg-black/55 border border-white/[0.08] rounded-[18px] p-3.5 flex flex-wrap gap-2 items-center justify-between cursor-pointer active:scale-95 transition-transform"
+                    className="bg-black/35 hover:bg-black/55 border border-white/[0.08] rounded-[18px] p-3 flex items-center justify-between gap-3 cursor-pointer active:scale-[0.98] transition-all overflow-hidden min-w-0"
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       <div className="w-8 h-8 rounded-full bg-iosRed/20 flex items-center justify-center text-iosRed flex-shrink-0">
                         <IconComponent name={c.icon} className="w-4 h-4" componentName={c.name} />
                       </div>
-                      <span className="text-sm font-bold text-white truncate">{c.name}</span>
+                      <span className="text-xs font-bold text-white truncate min-w-0 flex-1">{c.name}</span>
                     </div>
-                    <span className="text-[10px] bg-iosRed text-white font-extrabold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm flex-shrink-0">
-                      <AlertTriangle className="w-3.5 h-3.5" /> Servis
+                    <span className="text-[10px] bg-iosRed text-white font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm flex-shrink-0">
+                      <AlertTriangle className="w-3 h-3 flex-shrink-0" /> Servis
                     </span>
                   </div>
                 );
@@ -4085,6 +4112,7 @@ function App() {
             onClick={() => {
               setFormErrors({});
               setSelectedComponentsForLog([]);
+              setFormServiceCost('');
               setActiveModal('addHistory');
             }}
             className="bg-iosBlue hover:bg-iosBlue/95 text-white text-xs font-bold py-2.5 px-4.5 rounded-full flex items-center gap-1.5 active:scale-95 transition-transform"
@@ -4178,6 +4206,7 @@ function App() {
                       setFormErrors({});
                       setSelectedHistory(h);
                       setSelectedComponentsForLog(h.components);
+                      setFormServiceCost(h.cost ? h.cost.toLocaleString('id-ID') : '');
                       setActiveModal('editHistory');
                     }}
                     className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center text-iosGray hover:text-white"
@@ -4750,26 +4779,90 @@ function App() {
 
         <div className="space-y-3">
           <span className="text-xs font-bold text-iosGray uppercase tracking-wider">Grafik Biaya Bulanan</span>
-          <div className="glass rounded-[28px] p-4 space-y-4">
-            <div className="flex items-end justify-between h-20 pt-2 px-2">
-              <div className="flex flex-col items-center gap-1.5 flex-1">
-                <div className="w-full bg-white/[0.08] hover:bg-iosBlue/40 rounded-t-md h-8 transition-all"></div>
-                <span className="text-[9px] text-iosGray">Mar</span>
+          {(() => {
+            const activeHistory = serviceHistory.filter(h => h.vehicleId === activeVehicleId);
+            const hasAnyCost = activeHistory.some(h => (h.cost || 0) > 0);
+
+            if (!hasAnyCost) {
+              return (
+                <div className="glass rounded-[28px] p-5 text-center">
+                  <p className="text-[11px] text-iosGray leading-relaxed py-2">
+                    Belum ada data biaya servis. Tambahkan biaya saat membuat riwayat servis.
+                  </p>
+                </div>
+              );
+            }
+
+            // Generate last 3 months dynamically (ends with current month)
+            const now = new Date();
+            const monthsData = [];
+            for (let i = 2; i >= 0; i--) {
+              const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+              const label = d.toLocaleDateString('id-ID', { month: 'short' }); // e.g., "Apr", "Mei", "Jun"
+              const yearMonthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+              monthsData.push({
+                label,
+                key: yearMonthKey,
+                cost: 0,
+                isCurrent: i === 0
+              });
+            }
+
+            // Populate costs
+            activeHistory.forEach(h => {
+              if (!h.date) return;
+              const logDate = new Date(h.date);
+              if (isNaN(logDate.getTime())) return;
+              const key = `${logDate.getFullYear()}-${String(logDate.getMonth() + 1).padStart(2, '0')}`;
+              const found = monthsData.find(m => m.key === key);
+              if (found) {
+                found.cost += (h.cost || 0);
+              }
+            });
+
+            const maxCost = Math.max(...monthsData.map(m => m.cost), 1); // Avoid division by zero
+            const currentMonthCost = monthsData[2].cost;
+
+            return (
+              <div className="glass rounded-[28px] p-4.5 space-y-4">
+                <div className="flex items-end justify-between h-20 pt-2 px-2 gap-4">
+                  {monthsData.map((m, idx) => {
+                    const pct = Math.min(100, Math.max(8, Math.round((m.cost / maxCost) * 100)));
+                    return (
+                      <div key={idx} className="flex flex-col items-center gap-1.5 flex-1 relative group">
+                        <div 
+                          className={`w-full rounded-t-md transition-all duration-300 ${
+                            m.isCurrent 
+                              ? 'bg-iosBlue shadow-[0_0_10px_rgba(59,141,255,0.4)]' 
+                              : 'bg-white/[0.08] hover:bg-iosBlue/40'
+                          }`}
+                          style={{ height: `${pct}%` }}
+                          title={`Rp ${m.cost.toLocaleString('id-ID')}`}
+                        ></div>
+                        <span className={`text-[9px] ${m.isCurrent ? 'text-white font-bold' : 'text-iosGray'}`}>
+                          {m.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="space-y-2 pt-1 border-t border-white/[0.04] text-[11px]">
+                  <div className="flex justify-between items-center">
+                    <span className="text-iosGray">Estimasi Bulan Ini</span>
+                    <span className="font-bold text-iosBlue">Rp {currentMonthCost.toLocaleString('id-ID')}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-iosGray">Total Biaya 3 Bulan</span>
+                    <span className="font-bold text-white">Rp {monthsData.reduce((sum, m) => sum + m.cost, 0).toLocaleString('id-ID')}</span>
+                  </div>
+                  <p className="text-[9px] text-iosGray/60 italic text-center pt-1.5">
+                    Diambil dari total biaya pada Riwayat Servis
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-col items-center gap-1.5 flex-1">
-                <div className="w-full bg-white/[0.08] hover:bg-iosBlue/40 rounded-t-md h-12 transition-all"></div>
-                <span className="text-[9px] text-iosGray">Apr</span>
-              </div>
-              <div className="flex flex-col items-center gap-1.5 flex-1">
-                <div className="w-full bg-iosBlue rounded-t-md h-[65px] transition-all shadow-[0_0_10px_rgba(59,141,255,0.4)]"></div>
-                <span className="text-[9px] text-white font-bold">Mei</span>
-              </div>
-            </div>
-            <div className="flex justify-between items-center text-xs border-t border-white/[0.04] pt-3">
-              <span className="text-iosGray">Estimasi Total Biaya</span>
-              <span className="font-bold text-white">Rp {serviceHistory.reduce((sum, h) => sum + (h.cost || 0), 0).toLocaleString('id-ID')}</span>
-            </div>
-          </div>
+            );
+          })()}
         </div>
       </aside>
     );
@@ -5799,10 +5892,11 @@ function App() {
           onSubmit={(e) => {
             e.preventDefault();
             const fd = new FormData(e.target);
+            const cleanCost = formServiceCost.replace(/[^0-9]/g, '');
             handleCreateServiceLog({
               date: fd.get('serviceDate'),
               odo: fd.get('serviceOdo'),
-              cost: fd.get('serviceCost'),
+              cost: cleanCost ? parseFloat(cleanCost) : 0,
               notes: fd.get('serviceNotes')
             });
           }}
@@ -5835,13 +5929,26 @@ function App() {
             </div>
 
             <div className="space-y-1.5 text-left">
-              <label className="text-[10px] text-iosGray uppercase tracking-wider font-extrabold">Total Pengeluaran (Rp)</label>
-              <input 
-                type="number" 
-                name="serviceCost"
-                placeholder="Contoh: 150000"
-                className="w-full glass-input py-2.5 px-3 text-xs font-semibold placeholder-white/10"
-              />
+              <label className="text-[10px] text-iosGray uppercase tracking-wider font-extrabold">Biaya Servis (Rp)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-2.5 text-xs text-white/30 font-semibold select-none">Rp</span>
+                <input 
+                  type="text" 
+                  name="serviceCost"
+                  placeholder="Contoh: 180000"
+                  value={formServiceCost}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/[^0-9]/g, '');
+                    if (raw === '') {
+                      setFormServiceCost('');
+                    } else {
+                      setFormServiceCost(parseInt(raw, 10).toLocaleString('id-ID'));
+                    }
+                  }}
+                  onKeyDown={handleKeyDownNoEnter}
+                  className="w-full glass-input py-2.5 pl-8 pr-3 text-xs font-semibold placeholder-white/10"
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -5925,10 +6032,11 @@ function App() {
             onSubmit={(e) => {
               e.preventDefault();
               const fd = new FormData(e.target);
+              const cleanCost = formServiceCost.replace(/[^0-9]/g, '');
               handleUpdateServiceLog({
                 date: fd.get('serviceDate'),
                 odo: fd.get('serviceOdo'),
-                cost: fd.get('serviceCost'),
+                cost: cleanCost ? parseFloat(cleanCost) : 0,
                 notes: fd.get('serviceNotes')
               });
             }}
@@ -5961,14 +6069,26 @@ function App() {
               </div>
 
               <div className="space-y-1.5 text-left">
-                <label className="text-[10px] text-iosGray uppercase tracking-wider font-extrabold">Total Pengeluaran (Rp)</label>
-                <input 
-                  type="number" 
-                  name="serviceCost"
-                  defaultValue={selectedHistory.cost}
-                  placeholder="Contoh: 150000"
-                  className="w-full glass-input py-2.5 px-3 text-xs font-semibold text-white"
-                />
+                <label className="text-[10px] text-iosGray uppercase tracking-wider font-extrabold">Biaya Servis (Rp)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-xs text-white/30 font-semibold select-none">Rp</span>
+                  <input 
+                    type="text" 
+                    name="serviceCost"
+                    placeholder="Contoh: 180000"
+                    value={formServiceCost}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9]/g, '');
+                      if (raw === '') {
+                        setFormServiceCost('');
+                      } else {
+                        setFormServiceCost(parseInt(raw, 10).toLocaleString('id-ID'));
+                      }
+                    }}
+                    onKeyDown={handleKeyDownNoEnter}
+                    className="w-full glass-input py-2.5 pl-8 pr-3 text-xs font-semibold placeholder-white/10"
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
