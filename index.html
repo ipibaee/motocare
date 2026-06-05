@@ -7243,47 +7243,9 @@ function App() {
           <div className="flex-1 px-4 py-5 md:p-5 lg:p-8 space-y-6">
             {activeTab === 'ride' && vehicles.length > 0 && (
               <div className="w-full">
-                {/* Desktop Grid Layout */}
+                {/* Desktop Grid Layout only */}
                 <div className="hidden md:block">
                   {renderDesktopDashboardMetrics()}
-                </div>
-                {/* Mobile Grid Layout (2 columns) */}
-                <div className="block md:hidden w-full max-w-full">
-                  <div className="grid grid-cols-2 gap-[12px]">
-                    <div className="glass rounded-[24px] p-4.5 space-y-1.5 h-auto w-full text-left select-none overflow-hidden min-w-0 flex flex-col justify-between">
-                      <span className="text-iosGray text-[10px] uppercase tracking-wider font-bold truncate">Total Motor</span>
-                      <div className="flex justify-between items-end gap-1.5 mt-1">
-                        <h3 className="text-lg font-bold text-white leading-none truncate">{vehicles.length}</h3>
-                        <Bike className="w-4 h-4 text-iosBlue opacity-80 flex-shrink-0" />
-                      </div>
-                    </div>
-
-                    <div className="glass rounded-[24px] p-4.5 space-y-1.5 h-auto w-full text-left select-none overflow-hidden min-w-0 flex flex-col justify-between">
-                      <span className="text-iosGray text-[10px] uppercase tracking-wider font-bold truncate">Riwayat Servis</span>
-                      <div className="flex justify-between items-end gap-1.5 mt-1">
-                        <h3 className="text-lg font-bold text-white leading-none truncate">{serviceHistory.length}</h3>
-                        <History className="w-4 h-4 text-iosGreen opacity-80 flex-shrink-0" />
-                      </div>
-                    </div>
-
-                    <div className="glass rounded-[24px] p-4.5 space-y-1.5 h-auto w-full text-left select-none overflow-hidden min-w-0 flex flex-col justify-between">
-                      <span className="text-iosGray text-[10px] uppercase tracking-wider font-bold truncate">Satuan Aktif</span>
-                      <div className="flex justify-between items-end gap-1.5 mt-1">
-                        <h3 className="text-lg font-bold text-iosGreen leading-none truncate">{appUnit === 'km' ? 'KM' : 'Miles'}</h3>
-                        <span className="text-[9px] text-iosGray font-semibold leading-none flex-shrink-0">Jarak</span>
-                      </div>
-                    </div>
-
-                    <div className="glass rounded-[24px] p-4.5 space-y-1.5 h-auto w-full text-left select-none overflow-hidden min-w-0 flex flex-col justify-between">
-                      <span className="text-iosGray text-[10px] uppercase tracking-wider font-bold truncate">Urgent Alert</span>
-                      <div className="flex justify-between items-end gap-1.5 mt-1">
-                        <h3 className={`text-lg font-bold leading-none truncate ${attentionComponents.length > 0 ? 'text-iosRed' : 'text-iosGreen'}`}>
-                          {attentionComponents.length}
-                        </h3>
-                        <AlertTriangle className={`w-4 h-4 flex-shrink-0 ${attentionComponents.length > 0 ? 'text-iosRed animate-pulse' : 'text-iosGreen'}`} />
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
