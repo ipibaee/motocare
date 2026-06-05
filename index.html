@@ -1516,7 +1516,7 @@ const ModalWrapper = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[130] flex items-end md:items-center justify-center p-0 md:p-4 animate-fadeIn">
-      <div className="w-full md:max-w-[480px] h-[90%] md:h-auto md:max-h-[85vh] glass-strong border-t md:border border-white/[0.12] rounded-t-[32px] md:rounded-[32px] overflow-hidden flex flex-col shadow-2xl animate-slideUp">
+      <div className="w-full md:max-w-[480px] h-auto max-h-[90vh] md:max-h-[85vh] glass-strong border-t md:border border-white/[0.12] rounded-t-[32px] md:rounded-[32px] overflow-hidden flex flex-col shadow-2xl animate-slideUp">
         {children}
       </div>
     </div>
@@ -3802,19 +3802,23 @@ function App() {
                   <div 
                     key={c.id} 
                     onClick={() => {
-                      setDetailComponentId(c.id);
-                      setDetailTab('saat-ini');
+                      setFormErrors({});
+                      setSelectedComponentsForLog([c.name]);
+                      setFormServiceCost('');
+                      setActiveModal('addHistory');
                     }}
-                    className="bg-black/35 hover:bg-black/55 border border-white/[0.08] rounded-[18px] p-3 flex items-center justify-between gap-3 cursor-pointer active:scale-[0.98] transition-all overflow-hidden min-w-0"
+                    className="bg-black/35 hover:bg-black/55 border border-white/[0.08] rounded-[18px] p-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between gap-3.5 cursor-pointer active:scale-[0.98] transition-all overflow-hidden w-full max-w-full min-w-0 pb-4.5"
                   >
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1 max-w-full">
                       <div className="w-8 h-8 rounded-full bg-iosRed/20 flex items-center justify-center text-iosRed flex-shrink-0">
                         <IconComponent name={c.icon} className="w-4 h-4" componentName={c.name} />
                       </div>
-                      <span className="text-xs font-bold text-white truncate min-w-0 flex-1">{c.name}</span>
+                      <span className="text-xs font-bold text-white break-words min-w-0 flex-1 leading-normal">
+                        {c.name}
+                      </span>
                     </div>
-                    <span className="text-[10px] bg-iosRed text-white font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm flex-shrink-0">
-                      <AlertTriangle className="w-3 h-3 flex-shrink-0" /> Servis
+                    <span className="text-[10px] bg-iosRed text-white font-extrabold px-4.5 py-2.5 rounded-full uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
+                      <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" /> Servis
                     </span>
                   </div>
                 );
@@ -3822,6 +3826,12 @@ function App() {
             </div>
           </div>
         )}
+
+        {/* Monthly Cost Chart (Mobile only) */}
+        <div className="block xl:hidden space-y-3">
+          <span className="text-xs font-bold text-iosGray uppercase tracking-wider">Grafik Biaya Bulanan</span>
+          {renderMonthlyCostChart()}
+        </div>
 
         {/* Grid Suku Cadang */}
         <div className="space-y-4">
@@ -4711,6 +4721,92 @@ function App() {
     </div>
   );
 
+  const renderMonthlyCostChart = () => {
+    const activeHistory = serviceHistory.filter(h => h.vehicleId === activeVehicleId);
+    const hasAnyCost = activeHistory.some(h => (h.cost || 0) > 0);
+
+    if (!hasAnyCost) {
+      return (
+        <div className="glass rounded-[28px] p-5 text-center space-y-1.5 overflow-hidden w-full max-w-full select-none">
+          <p className="text-xs font-bold text-white">Belum ada biaya servis.</p>
+          <p className="text-[10px] text-iosGray leading-relaxed">
+            Isi biaya saat menambah riwayat servis.
+          </p>
+        </div>
+      );
+    }
+
+    // Generate last 3 months dynamically (ends with current month)
+    const now = new Date();
+    const monthsData = [];
+    for (let i = 2; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = d.toLocaleDateString('id-ID', { month: 'short' });
+      const yearMonthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      monthsData.push({
+        label,
+        key: yearMonthKey,
+        cost: 0,
+        isCurrent: i === 0
+      });
+    }
+
+    // Populate costs
+    activeHistory.forEach(h => {
+      if (!h.date) return;
+      const logDate = new Date(h.date);
+      if (isNaN(logDate.getTime())) return;
+      const key = `${logDate.getFullYear()}-${String(logDate.getMonth() + 1).padStart(2, '0')}`;
+      const found = monthsData.find(m => m.key === key);
+      if (found) {
+        found.cost += (h.cost || 0);
+      }
+    });
+
+    const maxCost = Math.max(...monthsData.map(m => m.cost), 1); // Avoid division by zero
+    const currentMonthCost = monthsData[2].cost;
+
+    return (
+      <div className="glass rounded-[28px] p-3.5 sm:p-4.5 space-y-3 sm:space-y-4 overflow-hidden w-full max-w-full select-none">
+        <div className="flex items-end justify-between h-16 sm:h-20 pt-2 px-1 gap-2 sm:gap-2.5 overflow-hidden w-full">
+          {monthsData.map((m, idx) => {
+            const pct = Math.min(100, Math.max(8, Math.round((m.cost / maxCost) * 100)));
+            return (
+              <div key={idx} className="flex flex-col items-center gap-1 sm:gap-1.5 flex-1 relative min-w-0 group">
+                <div 
+                  className={`w-full rounded-t-md transition-all duration-300 ${
+                    m.isCurrent 
+                      ? 'bg-iosBlue shadow-[0_0_10px_rgba(59,141,255,0.4)]' 
+                      : 'bg-white/[0.08] hover:bg-iosBlue/40'
+                  }`}
+                  style={{ height: `${pct}%` }}
+                  title={`Rp ${m.cost.toLocaleString('id-ID')}`}
+                ></div>
+                <span className={`text-[9px] truncate max-w-full ${m.isCurrent ? 'text-white font-bold' : 'text-iosGray'}`}>
+                  {m.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="space-y-1.5 sm:space-y-2 pt-1.5 border-t border-white/[0.04] text-[10px] sm:text-[11px] w-full overflow-hidden">
+          <div className="flex justify-between items-center gap-2">
+            <span className="text-iosGray truncate">Estimasi Bulan Ini</span>
+            <span className="font-bold text-iosBlue flex-shrink-0">Rp {currentMonthCost.toLocaleString('id-ID')}</span>
+          </div>
+          <div className="flex justify-between items-center gap-2">
+            <span className="text-iosGray truncate">Total Biaya 3 Bulan</span>
+            <span className="font-bold text-white flex-shrink-0">Rp {monthsData.reduce((sum, m) => sum + m.cost, 0).toLocaleString('id-ID')}</span>
+          </div>
+          <p className="text-[8px] sm:text-[9px] text-iosGray/60 italic text-center pt-1.5 truncate">
+            Diambil dari total biaya pada Riwayat Servis
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   const renderDesktopRightPanel = () => {
     const upcomingServices = currentComponents
       .map(c => ({ ...c, statusDetails: getComponentStatus(c, currentVehicle.odo) }))
@@ -4779,90 +4875,7 @@ function App() {
 
         <div className="space-y-3">
           <span className="text-xs font-bold text-iosGray uppercase tracking-wider">Grafik Biaya Bulanan</span>
-          {(() => {
-            const activeHistory = serviceHistory.filter(h => h.vehicleId === activeVehicleId);
-            const hasAnyCost = activeHistory.some(h => (h.cost || 0) > 0);
-
-            if (!hasAnyCost) {
-              return (
-                <div className="glass rounded-[28px] p-5 text-center">
-                  <p className="text-[11px] text-iosGray leading-relaxed py-2">
-                    Belum ada data biaya servis. Tambahkan biaya saat membuat riwayat servis.
-                  </p>
-                </div>
-              );
-            }
-
-            // Generate last 3 months dynamically (ends with current month)
-            const now = new Date();
-            const monthsData = [];
-            for (let i = 2; i >= 0; i--) {
-              const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-              const label = d.toLocaleDateString('id-ID', { month: 'short' }); // e.g., "Apr", "Mei", "Jun"
-              const yearMonthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-              monthsData.push({
-                label,
-                key: yearMonthKey,
-                cost: 0,
-                isCurrent: i === 0
-              });
-            }
-
-            // Populate costs
-            activeHistory.forEach(h => {
-              if (!h.date) return;
-              const logDate = new Date(h.date);
-              if (isNaN(logDate.getTime())) return;
-              const key = `${logDate.getFullYear()}-${String(logDate.getMonth() + 1).padStart(2, '0')}`;
-              const found = monthsData.find(m => m.key === key);
-              if (found) {
-                found.cost += (h.cost || 0);
-              }
-            });
-
-            const maxCost = Math.max(...monthsData.map(m => m.cost), 1); // Avoid division by zero
-            const currentMonthCost = monthsData[2].cost;
-
-            return (
-              <div className="glass rounded-[28px] p-4.5 space-y-4">
-                <div className="flex items-end justify-between h-20 pt-2 px-2 gap-4">
-                  {monthsData.map((m, idx) => {
-                    const pct = Math.min(100, Math.max(8, Math.round((m.cost / maxCost) * 100)));
-                    return (
-                      <div key={idx} className="flex flex-col items-center gap-1.5 flex-1 relative group">
-                        <div 
-                          className={`w-full rounded-t-md transition-all duration-300 ${
-                            m.isCurrent 
-                              ? 'bg-iosBlue shadow-[0_0_10px_rgba(59,141,255,0.4)]' 
-                              : 'bg-white/[0.08] hover:bg-iosBlue/40'
-                          }`}
-                          style={{ height: `${pct}%` }}
-                          title={`Rp ${m.cost.toLocaleString('id-ID')}`}
-                        ></div>
-                        <span className={`text-[9px] ${m.isCurrent ? 'text-white font-bold' : 'text-iosGray'}`}>
-                          {m.label}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="space-y-2 pt-1 border-t border-white/[0.04] text-[11px]">
-                  <div className="flex justify-between items-center">
-                    <span className="text-iosGray">Estimasi Bulan Ini</span>
-                    <span className="font-bold text-iosBlue">Rp {currentMonthCost.toLocaleString('id-ID')}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-iosGray">Total Biaya 3 Bulan</span>
-                    <span className="font-bold text-white">Rp {monthsData.reduce((sum, m) => sum + m.cost, 0).toLocaleString('id-ID')}</span>
-                  </div>
-                  <p className="text-[9px] text-iosGray/60 italic text-center pt-1.5">
-                    Diambil dari total biaya pada Riwayat Servis
-                  </p>
-                </div>
-              </div>
-            );
-          })()}
+          {renderMonthlyCostChart()}
         </div>
       </aside>
     );
@@ -5190,7 +5203,13 @@ function App() {
 
                 <button 
                   type="button"
-                  onClick={() => handleSingleService(comp.id, comp.notes)}
+                  onClick={() => {
+                    setDetailComponentId(null);
+                    setFormErrors({});
+                    setSelectedComponentsForLog([comp.name]);
+                    setFormServiceCost('');
+                    setActiveModal('addHistory');
+                  }}
                   className="w-full bg-iosBlue hover:bg-iosBlue/95 text-white py-4 rounded-full font-bold text-sm shadow-md active:scale-95 transition-transform"
                 >
                   Servis Komponen Sekarang
@@ -5949,6 +5968,9 @@ function App() {
                   className="w-full glass-input py-2.5 pl-8 pr-3 text-xs font-semibold placeholder-white/10"
                 />
               </div>
+              <p className="text-[9px] text-iosGray leading-normal mt-1 block select-none">
+                Biaya ini akan masuk ke grafik biaya bulanan di Dashboard.
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -6089,6 +6111,9 @@ function App() {
                     className="w-full glass-input py-2.5 pl-8 pr-3 text-xs font-semibold placeholder-white/10"
                   />
                 </div>
+                <p className="text-[9px] text-iosGray leading-normal mt-1 block select-none">
+                  Biaya ini akan masuk ke grafik biaya bulanan di Dashboard.
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -6717,8 +6742,49 @@ function App() {
         <div className="flex-1 flex flex-col xl:flex-row md:overflow-y-auto pb-[120px] md:pb-0">
           <div className="flex-1 px-4 py-5 md:p-5 lg:p-8 space-y-6">
             {activeTab === 'ride' && vehicles.length > 0 && (
-              <div className="hidden md:block">
-                {renderDesktopDashboardMetrics()}
+              <div className="w-full">
+                {/* Desktop Grid Layout */}
+                <div className="hidden md:block">
+                  {renderDesktopDashboardMetrics()}
+                </div>
+                {/* Mobile Horizontally Scrollable Layout */}
+                <div className="block md:hidden overflow-x-auto no-scrollbar -mx-4 px-4 pb-2 w-full max-w-full">
+                  <div className="flex gap-3.5 pb-1 w-max">
+                    <div className="glass rounded-[24px] p-4.5 space-y-1.5 w-[160px] flex-shrink-0 text-left select-none">
+                      <span className="text-iosGray text-[10px] uppercase tracking-wider font-semibold">Total Motor</span>
+                      <div className="flex justify-between items-end">
+                        <h3 className="text-xl font-bold text-white mt-1">{vehicles.length}</h3>
+                        <Bike className="w-5 h-5 text-iosBlue opacity-80 flex-shrink-0" />
+                      </div>
+                    </div>
+
+                    <div className="glass rounded-[24px] p-4.5 space-y-1.5 w-[160px] flex-shrink-0 text-left select-none">
+                      <span className="text-iosGray text-[10px] uppercase tracking-wider font-semibold">Riwayat Servis</span>
+                      <div className="flex justify-between items-end">
+                        <h3 className="text-xl font-bold text-white mt-1">{serviceHistory.length} Log</h3>
+                        <History className="w-5 h-5 text-iosGreen opacity-80 flex-shrink-0" />
+                      </div>
+                    </div>
+
+                    <div className="glass rounded-[24px] p-4.5 space-y-1.5 w-[160px] flex-shrink-0 text-left select-none">
+                      <span className="text-iosGray text-[10px] uppercase tracking-wider font-semibold">Satuan Aktif</span>
+                      <div className="flex justify-between items-end">
+                        <h3 className="text-xl font-bold text-iosGreen mt-1">{appUnit === 'km' ? 'KM' : 'Miles'}</h3>
+                        <span className="text-[9px] text-iosGray font-semibold mb-0.5 flex-shrink-0">Jarak</span>
+                      </div>
+                    </div>
+
+                    <div className="glass rounded-[24px] p-4.5 space-y-1.5 w-[160px] flex-shrink-0 text-left select-none">
+                      <span className="text-iosGray text-[10px] uppercase tracking-wider font-semibold">Urgent Alert</span>
+                      <div className="flex justify-between items-end">
+                        <h3 className={`text-xl font-bold mt-1 ${attentionComponents.length > 0 ? 'text-iosRed' : 'text-iosGreen'}`}>
+                          {attentionComponents.length}
+                        </h3>
+                        <AlertTriangle className={`w-5 h-5 flex-shrink-0 ${attentionComponents.length > 0 ? 'text-iosRed animate-pulse' : 'text-iosGreen'}`} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
             {renderTabContent()}
