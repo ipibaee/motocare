@@ -314,7 +314,7 @@
       }
       
       body {
-        padding-bottom: 110px !important; /* ensure contents are not covered by bottom nav */
+        padding-bottom: 130px !important; /* ensure contents are not covered by bottom nav */
       }
 
       .px-4 {
@@ -323,24 +323,24 @@
       }
 
       .odo-text {
-        font-size: clamp(32px, 10vw, 48px) !important;
+        font-size: clamp(28px, 8vw, 42px) !important;
       }
       .odo-card-container {
-        padding: 16px !important;
-        border-radius: 24px !important;
+        padding: 14px !important;
+        border-radius: 22px !important;
       }
       .odo-icon-container {
-        width: 44px !important;
-        height: 44px !important;
+        width: 40px !important;
+        height: 40px !important;
       }
       .odo-icon-container svg {
-        width: 20px !important;
-        height: 20px !important;
+        width: 18px !important;
+        height: 18px !important;
       }
 
       .toggle-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        gap: 12px !important;
+        gap: 10px !important;
       }
       @media (max-width: 350px) {
         .toggle-grid {
@@ -348,8 +348,8 @@
         }
       }
       .toggle-card {
-        padding: 12px !important;
-        border-radius: 20px !important;
+        padding: 10px !important;
+        border-radius: 18px !important;
       }
       .toggle-card span {
         font-size: 11px !important;
@@ -366,7 +366,7 @@
       }
       .component-card {
         padding: 12px 10px !important;
-        min-height: 135px !important;
+        min-height: 130px !important;
         border-radius: 18px !important;
       }
       .component-name {
@@ -381,14 +381,14 @@
       }
 
       .monthly-chart-card {
-        height: 180px !important;
+        height: 160px !important;
         padding: 12px !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
       }
       .monthly-chart-card > div:first-child {
-        height: 60px !important;
+        height: 55px !important;
       }
       .monthly-chart-card p {
         padding-top: 2px !important;
@@ -397,18 +397,18 @@
 
       /* Fixed Bottom Nav (Mobile Only) Overhaul */
       .glass-bottom-nav {
-        background: rgba(20, 20, 22, 0.85) !important;
+        background: rgba(20, 20, 22, 0.92) !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
-        border: 1px solid #2C2C2E !important;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+        border: 1px solid #3A3A3C !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
         position: fixed !important;
-        bottom: env(safe-area-inset-bottom, 16px) !important;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 20px) !important;
         left: 16px !important;
-        width: calc(100% - 92px) !important; /* leaves space for search FAB on the right */
+        width: calc(100% - 92px) !important;
         max-width: 380px !important;
-        height: 56px !important;
-        border-radius: 28px !important;
+        height: 64px !important;
+        border-radius: 32px !important;
         z-index: 120 !important;
         overflow: hidden !important;
         display: flex !important;
@@ -427,17 +427,17 @@
       /* Floating search button sizing Overhaul */
       .mobile-search-btn {
         position: fixed !important;
-        bottom: env(safe-area-inset-bottom, 16px) !important;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 20px) !important;
         right: 16px !important;
-        width: 56px !important;
-        height: 56px !important;
+        width: 64px !important;
+        height: 64px !important;
         border-radius: 999px !important;
-        z-index: 120 !important; /* same level as bottom nav */
-        background: rgba(20, 20, 22, 0.85) !important;
+        z-index: 120 !important;
+        background: rgba(20, 20, 22, 0.92) !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
-        border: 1px solid #2C2C2E !important;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+        border: 1px solid #3A3A3C !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -3905,7 +3905,7 @@ function App() {
     });
 
     return (
-      <div className="space-y-5 px-4 text-left select-none animate-fadeIn pb-10">
+      <div className="space-y-3 px-4 text-left select-none animate-fadeIn pb-10">
         {/* A. Kontrol Kecil */}
         <div className="grid grid-cols-2 gap-3">
           <button 
@@ -4921,12 +4921,12 @@ function App() {
             <button 
               key={tab.id}
               onClick={() => { setActiveTab(tab.id); setSelectionMode(false); }}
-              className={`flex flex-col items-center justify-center flex-1 h-full py-1.5 transition-all relative z-10 ${isActive ? 'text-iosBlue' : 'text-iosGray'}`}
+              className={`flex flex-col items-center justify-center flex-1 h-full py-2 transition-all relative z-10 ${isActive ? 'text-iosBlue' : 'text-iosGray'}`}
             >
-              <Icon className={`w-5 h-5 transition-transform ${tab.rotate ? 'rotate-45' : ''} ${isActive ? 'scale-110' : ''}`} />
-              <span className="text-[9px] font-bold mt-1 tracking-wide">{tab.label}</span>
+              <Icon className={`w-6 h-6 transition-transform ${tab.rotate ? 'rotate-45' : ''} ${isActive ? 'scale-110' : ''}`} />
+              <span className="text-[11px] font-bold mt-1 tracking-wide">{tab.label}</span>
               {isActive && (
-                <span className="absolute bottom-1.5 w-1 h-1 bg-iosBlue rounded-full"></span>
+                <span className="absolute bottom-2 w-1.5 h-1.5 bg-iosBlue rounded-full"></span>
               )}
             </button>
           );
