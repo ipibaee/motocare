@@ -7374,9 +7374,9 @@ function App() {
 
       {/* Toast popup */}
       {toast && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-[200] max-w-[90%] w-auto bg-iosCard/90 backdrop-blur-md border border-white/[0.12] shadow-2xl rounded-full py-2.5 px-5 flex items-center gap-2.5 animate-popover">
-          <div className={`w-2.5 h-2.5 rounded-full ${toast.type === 'error' ? 'bg-iosRed' : 'bg-iosGreen animate-pulse'}`}></div>
-          <span className="text-xs font-bold text-white whitespace-nowrap">{toast.message}</span>
+        <div className="fixed top-5 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 z-[200] md:max-w-[420px] w-auto md:w-auto bg-iosCard/90 backdrop-blur-md border border-white/[0.12] shadow-2xl rounded-full py-2.5 px-5 flex items-center gap-2.5 animate-popover">
+          <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${toast.type === 'error' ? 'bg-iosRed' : 'bg-iosGreen animate-pulse'}`}></div>
+          <span className="text-xs font-bold text-white">{toast.message}</span>
         </div>
       )}
     </div>
