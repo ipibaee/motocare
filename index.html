@@ -1780,6 +1780,7 @@ function App() {
 
   // Form local state states (to avoid database spam on sliders/typing)
   const [odoInput, setOdoInput] = React.useState('');
+  const [isEditingOdo, setIsEditingOdo] = React.useState(false);
   const [sliderIntervalKm, setSliderIntervalKm] = React.useState(0);
   const [sliderIntervalMonths, setSliderIntervalMonths] = React.useState(0);
   const [sliderRemainingKm, setSliderRemainingKm] = React.useState(0);
@@ -2266,7 +2267,6 @@ function App() {
     try {
       await window.databaseService.updateVehicle(userId, updatedVehicle);
       setVehicles(prev => prev.map(v => v.id === currentVehicle.id ? updatedVehicle : v));
-      setActiveModal(null);
       setFormErrors({});
       showToast('Odometer berhasil diperbarui!');
     } catch (err) {
@@ -3930,26 +3930,53 @@ function App() {
         </div>
 
         {/* B. Odometer Card */}
-        <div 
-          onClick={() => {
-            setOdoInput(currentVehicle.odo.toString());
-            setFormErrors({});
-            setActiveModal('odoSetting');
-          }}
-          className="bg-black border border-white/[0.08] rounded-[24px] p-5 flex items-center justify-between active:scale-[0.98] transition-transform duration-180 cursor-pointer"
-        >
+        <div className="bg-black border border-white/[0.08] rounded-[24px] p-5 flex items-center justify-between transition-transform duration-180">
           <div className="flex items-center gap-4 min-w-0">
             <div className="w-11 h-11 rounded-full bg-iosBlue/10 flex items-center justify-center text-iosBlue flex-shrink-0">
               <Compass className="w-5.5 h-5.5 animate-pulse" />
             </div>
-            <div className="min-w-0 text-left">
+            <div className="min-w-0 text-left flex-1">
               <span className="text-iosGray text-[10px] uppercase tracking-wider font-extrabold block">Odometer</span>
-              <h2 className="text-2xl font-black text-white mt-0.5 truncate leading-tight">
-                {displayDistance(currentVehicle.odo)} <span className="text-sm font-semibold text-iosGray">{appUnit}</span>
-              </h2>
+              {isEditingOdo ? (
+                <div className="flex items-center gap-2 mt-0.5">
+                  <input
+                    type="number"
+                    autoFocus
+                    value={odoInput}
+                    onChange={(e) => setOdoInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleUpdateOdometer(odoInput);
+                        setIsEditingOdo(false);
+                      }
+                      if (e.key === 'Escape') {
+                        setIsEditingOdo(false);
+                      }
+                    }}
+                    onBlur={() => {
+                      handleUpdateOdometer(odoInput);
+                      setIsEditingOdo(false);
+                    }}
+                    className="bg-transparent border-b-2 border-iosBlue text-2xl font-black text-white outline-none w-32 leading-tight"
+                  />
+                  <span className="text-sm font-semibold text-iosGray">{appUnit}</span>
+                </div>
+              ) : (
+                <h2
+                  onClick={() => { setOdoInput(currentVehicle.odo.toString()); setIsEditingOdo(true); }}
+                  className="text-2xl font-black text-white mt-0.5 truncate leading-tight cursor-text active:text-iosBlue"
+                  title="Ketuk untuk edit odometer"
+                >
+                  {displayDistance(currentVehicle.odo)} <span className="text-sm font-semibold text-iosGray">{appUnit}</span>
+                </h2>
+              )}
             </div>
           </div>
-          <button className="w-8 h-8 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-iosGray active:scale-90 transition-transform">
+          <button
+            onClick={() => { setActiveTab('settings'); setSelectionMode(false); }}
+            className="w-8 h-8 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-iosGray active:scale-90 transition-transform flex-shrink-0"
+            title="Pengaturan"
+          >
             <Settings className="w-4.5 h-4.5" />
           </button>
         </div>
@@ -4239,14 +4266,7 @@ function App() {
     return (
       <div className="space-y-6">
         {/* Large Odometer Card */}
-        <div 
-          onClick={() => {
-            setOdoInput(currentVehicle.odo.toString());
-            setFormErrors({});
-            setActiveModal('odoSetting');
-          }}
-          className="glass rounded-[32px] p-6 flex items-center justify-between cursor-pointer group active:scale-[0.98] transition-transform duration-180 odo-card-container"
-        >
+        <div className="glass rounded-[32px] p-6 flex items-center justify-between transition-transform duration-180 odo-card-container">
           <div className="flex items-center gap-4.5 min-w-0">
             <div className="relative w-14 h-14 rounded-full flex items-center justify-center text-iosBlue flex-shrink-0 odo-icon-container">
               <div className="absolute inset-0 bg-iosBlue/35 rounded-full blur-xl pulse-effect"></div>
@@ -4254,10 +4274,46 @@ function App() {
             </div>
             <div className="text-left min-w-0">
               <span className="text-iosGray text-[10px] uppercase tracking-widest font-extrabold block">Odometer Saat Ini</span>
-              <h2 className="text-3xl font-black tracking-tight text-white mt-1 select-all md:text-5xl truncate odo-text">{formatDistance(currentVehicle.odo)}</h2>
+              {isEditingOdo ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <input
+                    type="number"
+                    autoFocus
+                    value={odoInput}
+                    onChange={(e) => setOdoInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleUpdateOdometer(odoInput);
+                        setIsEditingOdo(false);
+                      }
+                      if (e.key === 'Escape') {
+                        setIsEditingOdo(false);
+                      }
+                    }}
+                    onBlur={() => {
+                      handleUpdateOdometer(odoInput);
+                      setIsEditingOdo(false);
+                    }}
+                    className="bg-transparent border-b-2 border-iosBlue text-3xl md:text-5xl font-black text-white outline-none w-40 md:w-64 leading-tight"
+                  />
+                  <span className="text-iosGray text-base font-semibold">{appUnit}</span>
+                </div>
+              ) : (
+                <h2
+                  onClick={() => { setOdoInput(currentVehicle.odo.toString()); setIsEditingOdo(true); }}
+                  className="text-3xl font-black tracking-tight text-white mt-1 select-all md:text-5xl truncate odo-text cursor-text hover:text-iosBlue transition-colors"
+                  title="Klik untuk edit odometer"
+                >
+                  {formatDistance(currentVehicle.odo)}
+                </h2>
+              )}
             </div>
           </div>
-          <button className="w-10 h-10 rounded-full glass flex items-center justify-center text-iosGray hover:text-white transition-colors flex-shrink-0 active:scale-90">
+          <button
+            onClick={() => setActiveTab('settings')}
+            className="w-10 h-10 rounded-full glass flex items-center justify-center text-iosGray hover:text-white transition-colors flex-shrink-0 active:scale-90"
+            title="Pengaturan"
+          >
             <Settings className="w-5 h-5" />
           </button>
         </div>
