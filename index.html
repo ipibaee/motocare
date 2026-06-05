@@ -153,18 +153,19 @@
 
     /* Fixed Bottom Nav (Mobile Only) */
     .glass-bottom-nav {
-      background: #1C1C1E;
+      background: rgba(28, 28, 30, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-top: 1px solid #2C2C2E;
       box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.6);
       position: fixed;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: calc(100% - 32px);
-      max-width: 360px;
-      height: 72px;
-      border-radius: 999px;
-      z-index: 100;
+      bottom: env(safe-area-inset-bottom, 12px);
+      left: 12px;
+      width: calc(100% - 24px);
+      max-width: 480px;
+      height: 64px;
+      border-radius: 28px;
+      z-index: 120;
       overflow: hidden;
     }
 
@@ -195,15 +196,17 @@
     /* Floating search button sizing */
     .mobile-search-btn {
       position: fixed;
-      bottom: 18px;
-      right: 18px;
-      width: 64px;
-      height: 64px;
+      bottom: calc(env(safe-area-inset-bottom, 12px) + 76px);
+      right: 16px;
+      width: 48px;
+      height: 48px;
       border-radius: 999px;
       z-index: 110;
-      background: #1C1C1E;
-      border: 1px solid #2C2C2E;
-      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
+      background: rgba(28, 28, 30, 0.9);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
     }
     .mobile-search-btn::before {
       content: "";
@@ -213,14 +216,6 @@
       background: transparent;
       pointer-events: none;
       z-index: 1;
-    }
-
-    /* Media query to lock search button to the right of bottom nav pill */
-    @media (min-width: 392px) {
-      .mobile-search-btn {
-        right: calc(50% - 180px + 4px) !important;
-        bottom: 20px !important;
-      }
     }
 
     /* Premium Inputs */
@@ -308,6 +303,97 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    /* Mobile specific style refactoring (max-width: 768px) */
+    @media (max-width: 768px) {
+      html, body, #root, .flex-1, main, .w-full {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      
+      body {
+        padding-bottom: 110px !important; /* ensure contents are not covered by bottom nav */
+      }
+
+      .px-4 {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+      }
+
+      .odo-text {
+        font-size: clamp(32px, 10vw, 48px) !important;
+      }
+      .odo-card-container {
+        padding: 16px !important;
+        border-radius: 24px !important;
+      }
+      .odo-icon-container {
+        width: 44px !important;
+        height: 44px !important;
+      }
+      .odo-icon-container svg {
+        width: 20px !important;
+        height: 20px !important;
+      }
+
+      .toggle-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 12px !important;
+      }
+      @media (max-width: 350px) {
+        .toggle-grid {
+          grid-template-columns: 1fr !important;
+        }
+      }
+      .toggle-card {
+        padding: 12px !important;
+        border-radius: 20px !important;
+      }
+      .toggle-card span {
+        font-size: 11px !important;
+        white-space: nowrap !important;
+      }
+
+      .components-grid {
+        gap: 10px !important;
+      }
+      @media (max-width: 340px) {
+        .components-grid {
+          gap: 6px !important;
+        }
+      }
+      .component-card {
+        padding: 12px 10px !important;
+        min-height: 135px !important;
+        border-radius: 18px !important;
+      }
+      .component-name {
+        font-size: 11px !important;
+      }
+      .component-status {
+        font-size: 9px !important;
+      }
+      .component-icon {
+        width: 28px !important;
+        height: 28px !important;
+      }
+
+      .monthly-chart-card {
+        height: 180px !important;
+        padding: 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+      }
+      .monthly-chart-card > div:first-child {
+        height: 60px !important;
+      }
+      .monthly-chart-card p {
+        padding-top: 2px !important;
+        margin: 0 !important;
+      }
     }
   </style>
 </head>
@@ -3752,16 +3838,16 @@ function App() {
             setFormErrors({});
             setActiveModal('odoSetting');
           }}
-          className="glass rounded-[32px] p-6 flex items-center justify-between cursor-pointer group active:scale-[0.98] transition-transform duration-180"
+          className="glass rounded-[32px] p-6 flex items-center justify-between cursor-pointer group active:scale-[0.98] transition-transform duration-180 odo-card-container"
         >
           <div className="flex items-center gap-4.5 min-w-0">
-            <div className="relative w-14 h-14 rounded-full flex items-center justify-center text-iosBlue flex-shrink-0">
+            <div className="relative w-14 h-14 rounded-full flex items-center justify-center text-iosBlue flex-shrink-0 odo-icon-container">
               <div className="absolute inset-0 bg-iosBlue/35 rounded-full blur-xl pulse-effect"></div>
               <Compass className="w-7 h-7 relative z-10 animate-pulse" />
             </div>
             <div className="text-left min-w-0">
               <span className="text-iosGray text-[10px] uppercase tracking-widest font-extrabold block">Odometer Saat Ini</span>
-              <h2 className="text-3xl font-black tracking-tight text-white mt-1 select-all md:text-5xl truncate">{formatDistance(currentVehicle.odo)}</h2>
+              <h2 className="text-3xl font-black tracking-tight text-white mt-1 select-all md:text-5xl truncate odo-text">{formatDistance(currentVehicle.odo)}</h2>
             </div>
           </div>
           <button className="w-10 h-10 rounded-full glass flex items-center justify-center text-iosGray hover:text-white transition-colors flex-shrink-0 active:scale-90">
@@ -3770,15 +3856,15 @@ function App() {
         </div>
 
         {/* Toggles (Mobile only) */}
-        <div className="grid grid-cols-2 gap-3.5 md:hidden">
-          <div className="glass rounded-[28px] p-4 flex items-center justify-between">
+        <div className="grid grid-cols-2 gap-3.5 md:hidden toggle-grid">
+          <div className="glass rounded-[28px] p-4 flex items-center justify-between toggle-card">
             <div className="flex items-center gap-2">
               <Play className="w-4 h-4 text-iosGreen" />
               <span className="text-xs font-bold text-white">Lacak Rute</span>
             </div>
             <Toggle active={autoTrack} onChange={() => setAutoTrack(!autoTrack)} />
           </div>
-          <div className="glass rounded-[28px] p-4 flex items-center justify-between">
+          <div className="glass rounded-[28px] p-4 flex items-center justify-between toggle-card">
             <div className="flex items-center gap-2">
               <Bell className="w-4 h-4 text-iosYellow" />
               <span className="text-xs font-bold text-white">Notifikasi</span>
@@ -3807,17 +3893,17 @@ function App() {
                       setFormServiceCost('');
                       setActiveModal('addHistory');
                     }}
-                    className="bg-black/35 hover:bg-black/55 border border-white/[0.08] rounded-[18px] p-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between gap-3.5 cursor-pointer active:scale-[0.98] transition-all overflow-hidden w-full max-w-full min-w-0 pb-4.5"
+                    className="bg-black/35 hover:bg-black/55 border border-white/[0.08] rounded-[18px] p-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between gap-3 cursor-pointer active:scale-[0.98] transition-all overflow-hidden w-full max-w-full min-w-0 h-auto"
                   >
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1 max-w-full">
+                    <div className="flex items-center gap-2.5 min-w-0 w-full sm:w-auto sm:flex-1 max-w-full">
                       <div className="w-8 h-8 rounded-full bg-iosRed/20 flex items-center justify-center text-iosRed flex-shrink-0">
                         <IconComponent name={c.icon} className="w-4 h-4" componentName={c.name} />
                       </div>
-                      <span className="text-xs font-bold text-white break-words min-w-0 flex-1 leading-normal">
+                      <span className="text-xs font-bold text-white break-words min-w-0 flex-1 leading-normal text-left">
                         {c.name}
                       </span>
                     </div>
-                    <span className="text-[10px] bg-iosRed text-white font-extrabold px-4.5 py-2.5 rounded-full uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
+                    <span className="text-[10px] bg-iosRed text-white font-extrabold px-4 py-2.5 rounded-full uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm flex-shrink-0 w-full sm:w-auto mt-3 sm:mt-0">
                       <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" /> Servis
                     </span>
                   </div>
@@ -3873,7 +3959,7 @@ function App() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-4 components-grid">
               {currentComponents.map(c => {
                 const status = getComponentStatus(c, currentVehicle.odo);
                 const isSelected = selectedComponents.includes(c.id);
@@ -3898,8 +3984,8 @@ function App() {
                   >
                     <div className="flex justify-between items-start w-full">
                       <div className="flex flex-col text-left max-w-[80%] min-w-0">
-                        <span className="text-[13px] font-bold text-white leading-tight truncate">{c.name}</span>
-                        <span className={`text-[11px] font-bold mt-0.5 truncate ${status.isUrgent ? 'text-iosRed font-extrabold' : 'text-iosGray'}`}>
+                        <span className="component-name text-[13px] font-bold text-white leading-tight truncate">{c.name}</span>
+                        <span className={`component-status text-[11px] font-bold mt-0.5 truncate ${status.isUrgent ? 'text-iosRed font-extrabold' : 'text-iosGray'}`}>
                           {status.isUrgent ? 'Perlu Servis' : `Sisa ${displayDistance(status.remainingKm)} ${appUnit}`}
                         </span>
                       </div>
@@ -3923,7 +4009,7 @@ function App() {
 
                     <div className="flex justify-center items-center py-2">
                       <div className={status.isUrgent ? 'text-iosRed' : 'text-zinc-400'}>
-                        <IconComponent name={c.icon} className="w-12 h-12" componentName={c.name} />
+                        <IconComponent name={c.icon} className="component-icon w-12 h-12" componentName={c.name} />
                       </div>
                     </div>
 
@@ -4767,7 +4853,7 @@ function App() {
     const currentMonthCost = monthsData[2].cost;
 
     return (
-      <div className="glass rounded-[28px] p-3.5 sm:p-4.5 space-y-3 sm:space-y-4 overflow-hidden w-full max-w-full select-none">
+      <div className="glass rounded-[28px] p-3.5 sm:p-4.5 space-y-3 sm:space-y-4 overflow-hidden w-full max-w-full select-none monthly-chart-card">
         <div className="flex items-end justify-between h-16 sm:h-20 pt-2 px-1 gap-2 sm:gap-2.5 overflow-hidden w-full">
           {monthsData.map((m, idx) => {
             const pct = Math.min(100, Math.max(8, Math.round((m.cost / maxCost) * 100)));
@@ -6747,40 +6833,40 @@ function App() {
                 <div className="hidden md:block">
                   {renderDesktopDashboardMetrics()}
                 </div>
-                {/* Mobile Horizontally Scrollable Layout */}
-                <div className="block md:hidden overflow-x-auto no-scrollbar -mx-4 px-4 pb-2 w-full max-w-full">
-                  <div className="flex gap-3.5 pb-1 w-max">
-                    <div className="glass rounded-[24px] p-4.5 space-y-1.5 w-[160px] flex-shrink-0 text-left select-none">
-                      <span className="text-iosGray text-[10px] uppercase tracking-wider font-semibold">Total Motor</span>
-                      <div className="flex justify-between items-end">
-                        <h3 className="text-xl font-bold text-white mt-1">{vehicles.length}</h3>
-                        <Bike className="w-5 h-5 text-iosBlue opacity-80 flex-shrink-0" />
+                {/* Mobile Grid Layout (2 columns) */}
+                <div className="block md:hidden w-full max-w-full">
+                  <div className="grid grid-cols-2 gap-[12px]">
+                    <div className="glass rounded-[24px] p-4.5 space-y-1.5 h-auto w-full text-left select-none overflow-hidden min-w-0 flex flex-col justify-between">
+                      <span className="text-iosGray text-[10px] uppercase tracking-wider font-bold truncate">Total Motor</span>
+                      <div className="flex justify-between items-end gap-1.5 mt-1">
+                        <h3 className="text-lg font-bold text-white leading-none truncate">{vehicles.length}</h3>
+                        <Bike className="w-4 h-4 text-iosBlue opacity-80 flex-shrink-0" />
                       </div>
                     </div>
 
-                    <div className="glass rounded-[24px] p-4.5 space-y-1.5 w-[160px] flex-shrink-0 text-left select-none">
-                      <span className="text-iosGray text-[10px] uppercase tracking-wider font-semibold">Riwayat Servis</span>
-                      <div className="flex justify-between items-end">
-                        <h3 className="text-xl font-bold text-white mt-1">{serviceHistory.length} Log</h3>
-                        <History className="w-5 h-5 text-iosGreen opacity-80 flex-shrink-0" />
+                    <div className="glass rounded-[24px] p-4.5 space-y-1.5 h-auto w-full text-left select-none overflow-hidden min-w-0 flex flex-col justify-between">
+                      <span className="text-iosGray text-[10px] uppercase tracking-wider font-bold truncate">Riwayat Servis</span>
+                      <div className="flex justify-between items-end gap-1.5 mt-1">
+                        <h3 className="text-lg font-bold text-white leading-none truncate">{serviceHistory.length}</h3>
+                        <History className="w-4 h-4 text-iosGreen opacity-80 flex-shrink-0" />
                       </div>
                     </div>
 
-                    <div className="glass rounded-[24px] p-4.5 space-y-1.5 w-[160px] flex-shrink-0 text-left select-none">
-                      <span className="text-iosGray text-[10px] uppercase tracking-wider font-semibold">Satuan Aktif</span>
-                      <div className="flex justify-between items-end">
-                        <h3 className="text-xl font-bold text-iosGreen mt-1">{appUnit === 'km' ? 'KM' : 'Miles'}</h3>
-                        <span className="text-[9px] text-iosGray font-semibold mb-0.5 flex-shrink-0">Jarak</span>
+                    <div className="glass rounded-[24px] p-4.5 space-y-1.5 h-auto w-full text-left select-none overflow-hidden min-w-0 flex flex-col justify-between">
+                      <span className="text-iosGray text-[10px] uppercase tracking-wider font-bold truncate">Satuan Aktif</span>
+                      <div className="flex justify-between items-end gap-1.5 mt-1">
+                        <h3 className="text-lg font-bold text-iosGreen leading-none truncate">{appUnit === 'km' ? 'KM' : 'Miles'}</h3>
+                        <span className="text-[9px] text-iosGray font-semibold leading-none flex-shrink-0">Jarak</span>
                       </div>
                     </div>
 
-                    <div className="glass rounded-[24px] p-4.5 space-y-1.5 w-[160px] flex-shrink-0 text-left select-none">
-                      <span className="text-iosGray text-[10px] uppercase tracking-wider font-semibold">Urgent Alert</span>
-                      <div className="flex justify-between items-end">
-                        <h3 className={`text-xl font-bold mt-1 ${attentionComponents.length > 0 ? 'text-iosRed' : 'text-iosGreen'}`}>
+                    <div className="glass rounded-[24px] p-4.5 space-y-1.5 h-auto w-full text-left select-none overflow-hidden min-w-0 flex flex-col justify-between">
+                      <span className="text-iosGray text-[10px] uppercase tracking-wider font-bold truncate">Urgent Alert</span>
+                      <div className="flex justify-between items-end gap-1.5 mt-1">
+                        <h3 className={`text-lg font-bold leading-none truncate ${attentionComponents.length > 0 ? 'text-iosRed' : 'text-iosGreen'}`}>
                           {attentionComponents.length}
                         </h3>
-                        <AlertTriangle className={`w-5 h-5 flex-shrink-0 ${attentionComponents.length > 0 ? 'text-iosRed animate-pulse' : 'text-iosGreen'}`} />
+                        <AlertTriangle className={`w-4 h-4 flex-shrink-0 ${attentionComponents.length > 0 ? 'text-iosRed animate-pulse' : 'text-iosGreen'}`} />
                       </div>
                     </div>
                   </div>
@@ -6801,7 +6887,7 @@ function App() {
           onClick={() => setActiveTab('search')}
           className="mobile-search-btn glass-strong flex items-center justify-center text-iosBlue shadow-2xl active:scale-90 transition-transform cursor-pointer md:hidden"
         >
-          <Search className="w-6 h-6 text-white" />
+          <Search className="w-5 h-5 text-white" />
         </button>
       )}
 
