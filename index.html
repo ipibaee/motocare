@@ -2927,7 +2927,10 @@ function App() {
     }
     try {
       const { error } = await window.supabaseClient.auth.signInWithOAuth({
-        provider: 'google'
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
       });
       if (error) throw error;
     } catch (err) {
