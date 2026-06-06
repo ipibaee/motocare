@@ -3292,7 +3292,7 @@ function App() {
 
     if (window.supabaseClient && userId) {
       try {
-        await window.supabaseClient.storage.from('avatars').remove([`avatar_${userId}.png`]);
+        await window.supabaseClient.storage.from('avatars').remove([`avatar_${userId}.webp`]);
       } catch (err) {
         console.warn("Failed to remove avatar from Supabase storage:", err);
       }
@@ -5134,58 +5134,56 @@ function App() {
   };
 
   const renderMobileHeader = () => (
-    <div className="glass-header sticky top-0 z-30 px-4 pt-3 pb-3 flex items-center justify-between border-b border-white/[0.06] md:hidden select-none">
-      <div className="flex items-center gap-2">
-        <div className="relative" id="vehicle-dropdown-container-mobile">
-          <button 
-            onClick={() => setShowVehicleDropdown(!showVehicleDropdown)}
-            className="flex items-center gap-2 text-white glass-pill py-1.5 px-3 rounded-full active:scale-95 transition-transform"
-          >
-            <Bike className="w-4 h-4 text-iosBlue" />
-            <span className="font-semibold text-sm max-w-[90px] truncate">{currentVehicle.name}</span>
-            <ChevronDown className={`w-3.5 h-3.5 text-iosGray transition-transform duration-200 ${showVehicleDropdown ? 'rotate-180' : ''}`} />
-          </button>
-          
-          {showVehicleDropdown && (
-            <div className="absolute top-10 left-0 glass-strong border border-white/[0.12] rounded-ios shadow-2xl p-2 w-56 z-50 animate-popover">
-              {vehicles.map(v => (
-                <button
-                  key={v.id}
-                  onClick={() => handleVehicleChange(v.id)}
-                  className="w-full flex items-center justify-between text-left py-2 px-3 hover:bg-white/[0.06] rounded-ios-sm transition-colors mb-1 text-sm relative z-10"
-                >
-                  <span className="font-medium text-white truncate max-w-[150px]">{v.name}</span>
-                  {v.id === activeVehicleId && <Check className="w-4 h-4 text-iosBlue flex-shrink-0" />}
-                </button>
-              ))}
-              <hr className="border-white/[0.08] my-1" />
+    <div className="glass-header sticky top-0 z-30 px-4 py-3 flex items-center justify-between gap-3 border-b border-white/[0.06] md:hidden select-none">
+      <div className="relative flex-1 max-w-[240px]" id="vehicle-dropdown-container-mobile">
+        <button 
+          onClick={() => setShowVehicleDropdown(!showVehicleDropdown)}
+          className="w-full flex items-center justify-between gap-3 text-white glass-pill h-[52px] px-4 rounded-full active:scale-95 transition-transform"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <Bike className="w-5 h-5 text-iosBlue flex-shrink-0" />
+            <span className="font-extrabold text-sm text-white tracking-tight truncate">{currentVehicle.name}</span>
+          </div>
+          <ChevronDown className={`w-4 h-4 text-iosGray flex-shrink-0 transition-transform duration-200 ${showVehicleDropdown ? 'rotate-180' : ''}`} />
+        </button>
+        
+        {showVehicleDropdown && (
+          <div className="absolute top-[58px] left-0 glass-strong border border-white/[0.12] rounded-ios shadow-2xl p-2 w-64 z-50 animate-popover">
+            {vehicles.map(v => (
               <button
-                onClick={() => {
-                  setFormErrors({});
-                  setActiveModal('addVehicle');
-                  setShowVehicleDropdown(false);
-                }}
-                className="w-full flex items-center gap-2 text-left py-2 px-3 hover:bg-iosBlue/10 text-iosBlue rounded-ios-sm transition-colors text-sm font-semibold relative z-10"
+                key={v.id}
+                onClick={() => handleVehicleChange(v.id)}
+                className="w-full flex items-center justify-between text-left py-2 px-3 hover:bg-white/[0.06] rounded-ios-sm transition-colors mb-1 text-sm relative z-10"
               >
-                <Plus className="w-4 h-4" /> Tambah Motor
+                <span className="font-medium text-white truncate max-w-[150px]">{v.name}</span>
+                {v.id === activeVehicleId && <Check className="w-4 h-4 text-iosBlue flex-shrink-0" />}
               </button>
-            </div>
-          )}
-        </div>
+            ))}
+            <hr className="border-white/[0.08] my-1" />
+            <button
+              onClick={() => {
+                setFormErrors({});
+                setActiveModal('addVehicle');
+                setShowVehicleDropdown(false);
+              }}
+              className="w-full flex items-center gap-2 text-left py-2 px-3 hover:bg-iosBlue/10 text-iosBlue rounded-ios-sm transition-colors text-sm font-semibold relative z-10"
+            >
+              <Plus className="w-4 h-4" /> Tambah Motor
+            </button>
+          </div>
+        )}
       </div>
 
-      <div className="flex items-center gap-2">
-        <button 
-          onClick={() => setShowMobileProfileModal(true)}
-          className={`w-8 h-8 rounded-full glass flex items-center justify-center active:scale-90 transition-transform overflow-hidden ${showMobileProfileModal ? 'border border-iosBlue text-iosBlue' : 'text-iosGray'}`}
-        >
-          {profilePic ? (
-            <img src={profilePic} alt="Profile" className="w-full h-full object-cover" />
-          ) : (
-            <img src="/android-chrome-192x192.png" alt="Profile" className="w-full h-full object-cover" />
-          )}
-        </button>
-      </div>
+      <button 
+        onClick={() => setShowMobileProfileModal(true)}
+        className={`w-11 h-11 rounded-full glass flex items-center justify-center active:scale-90 transition-transform overflow-hidden flex-shrink-0 ${showMobileProfileModal ? 'border border-iosBlue text-iosBlue' : 'text-iosGray'}`}
+      >
+        {profilePic ? (
+          <img src={profilePic} alt="Profile" className="w-full h-full object-cover rounded-full" />
+        ) : (
+          <img src="/android-chrome-192x192.png" alt="Profile" className="w-full h-full object-cover rounded-full" />
+        )}
+      </button>
     </div>
   );
 
@@ -5400,22 +5398,22 @@ function App() {
         ctx.translate(cropX * scale, cropY * scale);
         ctx.scale(cropZoom, cropZoom);
 
-        let drawW = 240;
-        let drawH = 240;
+        let drawW = 512;
+        let drawH = 512;
         if (imgAspect > 1) {
-          drawW = 240 * imgAspect;
+          drawW = 512 * imgAspect;
         } else {
-          drawH = 240 / imgAspect;
+          drawH = 512 / imgAspect;
         }
 
         ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
         ctx.restore();
 
-        // Compress to JPEG with 82% quality (WebP is supported in most modern browsers, but JPEG is 100% universal and works with Supabase storage)
+        // Compress to WebP with 85% quality
         canvas.toBlob(async (blob) => {
           if (!blob) return;
           
-          const base64 = canvas.toDataURL('image/jpeg', 0.82);
+          const base64 = canvas.toDataURL('image/webp', 0.85);
           const userId = user?.id || null;
           const key = userId ? `motocare_profile_pic_${userId}` : 'motocare_profile_pic_guest';
           
@@ -5428,13 +5426,13 @@ function App() {
             try {
               const { error } = await window.supabaseClient.storage
                 .from('avatars')
-                .upload(`avatar_${userId}.png`, blob, {
+                .upload(`avatar_${userId}.webp`, blob, {
                   upsert: true,
-                  contentType: 'image/jpeg'
+                  contentType: 'image/webp'
                 });
               
               if (!error) {
-                const { data } = window.supabaseClient.storage.from('avatars').getPublicUrl(`avatar_${userId}.png`);
+                const { data } = window.supabaseClient.storage.from('avatars').getPublicUrl(`avatar_${userId}.webp`);
                 if (data && data.publicUrl) {
                   const urlWithBuster = `${data.publicUrl}?t=${Date.now()}`;
                   localStorage.setItem(key, urlWithBuster);
@@ -5445,7 +5443,7 @@ function App() {
               console.warn("Supabase Storage upload failed, fallback to local storage:", storageErr);
             }
           }
-        }, 'image/jpeg', 0.82);
+        }, 'image/webp', 0.85);
       };
       img.src = croppingSrc;
     };
@@ -5673,13 +5671,13 @@ function App() {
         <div className="relative" id="profile-dropdown-container">
           <button
             onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-            className="flex items-center gap-2.5 bg-iosCard py-1.5 pl-2.5 pr-3.5 rounded-full border border-white/[0.08] cursor-pointer hover:bg-white/[0.04] active:scale-95 transition-all"
+            className="flex items-center gap-2.5 bg-iosCard p-1 pr-4 rounded-full border border-white/[0.08] cursor-pointer hover:bg-white/[0.04] active:scale-95 transition-all"
           >
-            <div className="w-7 h-7 rounded-full bg-iosBlue/15 text-iosBlue flex items-center justify-center text-xs font-bold flex-shrink-0 overflow-hidden">
+            <div className="w-11 h-11 lg:w-12 lg:h-12 rounded-full bg-iosBlue/15 text-iosBlue flex items-center justify-center text-xs font-bold flex-shrink-0 overflow-hidden">
               {profilePic ? (
-                <img src={profilePic} alt="Profile" className="w-full h-full object-cover" />
+                <img src={profilePic} alt="Profile" className="w-full h-full object-cover rounded-full" />
               ) : (
-                <img src="/android-chrome-192x192.png" alt="Profile" className="w-full h-full object-cover" />
+                <img src="/android-chrome-192x192.png" alt="Profile" className="w-full h-full object-cover rounded-full" />
               )}
             </div>
             <div className="flex flex-col text-left min-w-0">
