@@ -305,6 +305,187 @@
       text-overflow: ellipsis;
     }
 
+    /* ====================================================
+       COLLAPSIBLE SIDEBAR STYLES
+       ==================================================== */
+
+    /* Sidebar transition */
+    .desktop-sidebar {
+      transition: width 250ms cubic-bezier(0.4, 0, 0.2, 1),
+                  padding 250ms cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .desktop-sidebar.collapsed {
+      width: 72px;
+    }
+
+    .desktop-sidebar.expanded {
+      width: 260px;
+    }
+
+    /* Sidebar nav item text fade */
+    .sidebar-label {
+      transition: opacity 200ms ease, max-width 250ms ease;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .desktop-sidebar.collapsed .sidebar-label {
+      opacity: 0;
+      max-width: 0;
+    }
+
+    .desktop-sidebar.expanded .sidebar-label {
+      opacity: 1;
+      max-width: 160px;
+    }
+
+    /* Sidebar logo fade */
+    .sidebar-logo-text {
+      transition: opacity 200ms ease, max-width 250ms ease;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .desktop-sidebar.collapsed .sidebar-logo-text {
+      opacity: 0;
+      max-width: 0;
+    }
+
+    .desktop-sidebar.expanded .sidebar-logo-text {
+      opacity: 1;
+      max-width: 160px;
+    }
+
+    /* Sidebar tooltip */
+    .sidebar-tooltip {
+      position: absolute;
+      left: calc(100% + 12px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: #2C2C2E;
+      border: 1px solid #3A3A3C;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 8px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 150ms ease;
+      z-index: 200;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    .sidebar-tooltip::before {
+      content: '';
+      position: absolute;
+      left: -5px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-right: 5px solid #3A3A3C;
+    }
+
+    .sidebar-nav-item:hover .sidebar-tooltip {
+      opacity: 1;
+    }
+
+    .sidebar-nav-item {
+      position: relative;
+    }
+
+    /* Profile dropdown */
+    .profile-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: #1C1C1E;
+      border: 1px solid #3A3A3C;
+      border-radius: 16px;
+      min-width: 200px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+      z-index: 200;
+      overflow: hidden;
+      animation: popoverEntrance 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      transform-origin: top right;
+    }
+
+    .profile-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 16px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: #AEAEB2;
+      transition: background 140ms, color 140ms;
+    }
+
+    .profile-dropdown-item:hover {
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+    }
+
+    .profile-dropdown-item.danger {
+      color: #E5484D;
+    }
+
+    .profile-dropdown-item.danger:hover {
+      background: rgba(229,72,77,0.1);
+      color: #E5484D;
+    }
+
+    /* Mobile drawer overlay */
+    .mobile-sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 150;
+      animation: fadeIn 200ms ease forwards;
+    }
+
+    .mobile-sidebar-drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 280px;
+      background: #1C1C1E;
+      border-right: 1px solid #2C2C2E;
+      z-index: 160;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 16px;
+      animation: slideInLeft 250ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes slideInLeft {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0); }
+    }
+
+    /* Tablet: auto-collapse at 768-1200px */
+    @media (min-width: 768px) and (max-width: 1200px) {
+      .desktop-sidebar.expanded {
+        width: 72px;
+      }
+      .desktop-sidebar.expanded .sidebar-label,
+      .desktop-sidebar.expanded .sidebar-logo-text {
+        opacity: 0;
+        max-width: 0;
+      }
+    }
+
     /* Mobile specific style refactoring (max-width: 768px) */
     @media (max-width: 768px) {
       html, body, #root, .flex-1, main, .w-full {
@@ -1590,6 +1771,8 @@ const Camera = createIconWrapper('Camera');
 const Lock = createIconWrapper('Lock');
 const EyeOff = createIconWrapper('EyeOff');
 const LayoutDashboard = createIconWrapper('LayoutDashboard');
+const Menu = createIconWrapper('Menu');
+const LogOut = createIconWrapper('LogOut');
 
 const CURRENT_DATE_STRING = '2026-05-30';
 const CURRENT_DATE = new Date(CURRENT_DATE_STRING);
@@ -1748,6 +1931,36 @@ function App() {
 
   const [showVehicleDropdown, setShowVehicleDropdown] = React.useState(false);
   const [showNotificationPopover, setShowNotificationPopover] = React.useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = React.useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(() => {
+    const saved = localStorage.getItem('motocare_sidebar_collapsed');
+    return saved !== null ? saved === 'true' : true;
+  });
+
+  // Persist sidebar state to localStorage
+  React.useEffect(() => {
+    localStorage.setItem('motocare_sidebar_collapsed', String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
+
+  // Mobile sidebar drawer
+  const [showMobileSidebar, setShowMobileSidebar] = React.useState(false);
+
+  // Close dropdowns on outside click
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (!e.target.closest('#profile-dropdown-container')) {
+        setShowProfileDropdown(false);
+      }
+      if (!e.target.closest('#vehicle-dropdown-container') && !e.target.closest('#vehicle-dropdown-container-mobile')) {
+        setShowVehicleDropdown(false);
+      }
+      if (!e.target.closest('#notification-container')) {
+        setShowNotificationPopover(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   // Modal control
   const [activeModal, setActiveModal] = React.useState(null); 
@@ -5002,42 +5215,53 @@ function App() {
   };
 
   const renderMobileHeader = () => (
-    <div className="glass-header sticky top-0 z-30 px-5 pt-3 pb-3 flex items-center justify-between border-b border-white/[0.06] md:hidden select-none">
-      <div className="relative">
-        <button 
-          onClick={() => setShowVehicleDropdown(!showVehicleDropdown)}
-          className="flex items-center gap-2 text-white glass-pill py-1.5 px-3 rounded-full active:scale-95 transition-transform"
+    <div className="glass-header sticky top-0 z-30 px-4 pt-3 pb-3 flex items-center justify-between border-b border-white/[0.06] md:hidden select-none">
+      <div className="flex items-center gap-2">
+        {/* Hamburger button to open mobile sidebar drawer */}
+        <button
+          onClick={() => setShowMobileSidebar(true)}
+          className="w-8 h-8 rounded-full glass flex items-center justify-center text-iosGray active:scale-90 transition-transform"
+          aria-label="Buka menu navigasi"
         >
-          <Bike className="w-4 h-4 text-iosBlue" />
-          <span className="font-semibold text-sm max-w-[100px] truncate">{currentVehicle.name}</span>
-          <ChevronDown className={`w-3.5 h-3.5 text-iosGray transition-transform duration-200 ${showVehicleDropdown ? 'rotate-180' : ''}`} />
+          <Menu className="w-4 h-4" />
         </button>
-        
-        {showVehicleDropdown && (
-          <div className="absolute top-10 left-0 glass-strong border border-white/[0.12] rounded-ios shadow-2xl p-2 w-56 z-50 animate-popover">
-            {vehicles.map(v => (
+
+        <div className="relative" id="vehicle-dropdown-container-mobile">
+          <button 
+            onClick={() => setShowVehicleDropdown(!showVehicleDropdown)}
+            className="flex items-center gap-2 text-white glass-pill py-1.5 px-3 rounded-full active:scale-95 transition-transform"
+          >
+            <Bike className="w-4 h-4 text-iosBlue" />
+            <span className="font-semibold text-sm max-w-[90px] truncate">{currentVehicle.name}</span>
+            <ChevronDown className={`w-3.5 h-3.5 text-iosGray transition-transform duration-200 ${showVehicleDropdown ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {showVehicleDropdown && (
+            <div className="absolute top-10 left-0 glass-strong border border-white/[0.12] rounded-ios shadow-2xl p-2 w-56 z-50 animate-popover">
+              {vehicles.map(v => (
+                <button
+                  key={v.id}
+                  onClick={() => handleVehicleChange(v.id)}
+                  className="w-full flex items-center justify-between text-left py-2 px-3 hover:bg-white/[0.06] rounded-ios-sm transition-colors mb-1 text-sm relative z-10"
+                >
+                  <span className="font-medium text-white truncate max-w-[150px]">{v.name}</span>
+                  {v.id === activeVehicleId && <Check className="w-4 h-4 text-iosBlue flex-shrink-0" />}
+                </button>
+              ))}
+              <hr className="border-white/[0.08] my-1" />
               <button
-                key={v.id}
-                onClick={() => handleVehicleChange(v.id)}
-                className="w-full flex items-center justify-between text-left py-2 px-3 hover:bg-white/[0.06] rounded-ios-sm transition-colors mb-1 text-sm relative z-10"
+                onClick={() => {
+                  setFormErrors({});
+                  setActiveModal('addVehicle');
+                  setShowVehicleDropdown(false);
+                }}
+                className="w-full flex items-center gap-2 text-left py-2 px-3 hover:bg-iosBlue/10 text-iosBlue rounded-ios-sm transition-colors text-sm font-semibold relative z-10"
               >
-                <span className="font-medium text-white truncate max-w-[150px]">{v.name}</span>
-                {v.id === activeVehicleId && <Check className="w-4 h-4 text-iosBlue flex-shrink-0" />}
+                <Plus className="w-4 h-4" /> Tambah Motor
               </button>
-            ))}
-            <hr className="border-white/[0.08] my-1" />
-            <button
-              onClick={() => {
-                setFormErrors({});
-                setActiveModal('addVehicle');
-                setShowVehicleDropdown(false);
-              }}
-              className="w-full flex items-center gap-2 text-left py-2 px-3 hover:bg-iosBlue/10 text-iosBlue rounded-ios-sm transition-colors text-sm font-semibold relative z-10"
-            >
-              <Plus className="w-4 h-4" /> Tambah Motor
-            </button>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-2">
@@ -5055,95 +5279,187 @@ function App() {
     </div>
   );
 
-  const renderDesktopSidebar = () => (
-    <aside className="hidden md:flex flex-col w-20 lg:w-64 border-r border-white/[0.06] bg-iosCard flex-shrink-0 p-5 min-h-screen justify-between select-none">
-      <div className="space-y-8">
-        <div className="flex items-center gap-3 px-3 py-2 cursor-pointer" onClick={() => setActiveTab('ride')}>
-          <div className="w-10 h-10 rounded-xl bg-iosBlue flex items-center justify-center text-white shadow-[0_4px_12px_rgba(59,141,255,0.3)] flex-shrink-0">
-            <span className="inline-flex items-center justify-center"><i data-lucide="compass" className="w-5 h-5"></i></span>
+  const renderMobileSidebarDrawer = () => {
+    if (!showMobileSidebar) return null;
+    const navItems = [
+      { id: 'ride', name: 'Dashboard', icon: LayoutDashboard },
+      { id: 'trip', name: 'Perjalanan', icon: Compass },
+      { id: 'history', name: 'Riwayat', icon: History },
+      { id: 'shops', name: 'Bengkel', icon: MapPin },
+    ];
+    const bottomItems = [
+      { id: 'profile', name: 'Profil', Icon: User },
+      { id: 'settings', name: 'Pengaturan', Icon: Settings },
+    ];
+    return (
+      <>
+        <div className="mobile-sidebar-overlay md:hidden" onClick={() => setShowMobileSidebar(false)} />
+        <div className="mobile-sidebar-drawer md:hidden">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => { setActiveTab('ride'); setShowMobileSidebar(false); }}>
+              <div className="w-9 h-9 rounded-xl bg-iosBlue flex items-center justify-center text-white shadow-[0_4px_12px_rgba(59,141,255,0.3)] flex-shrink-0">
+                <span className="inline-flex items-center justify-center"><i data-lucide="compass" className="w-4 h-4"></i></span>
+              </div>
+              <span className="font-extrabold text-lg tracking-tight text-white">MotoCare</span>
+            </div>
+            <button onClick={() => setShowMobileSidebar(false)} className="w-8 h-8 rounded-lg flex items-center justify-center text-iosGray hover:text-white hover:bg-white/[0.06] transition-colors">
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <span className="font-extrabold text-xl tracking-tight text-white hidden lg:inline-block">MotoCare</span>
-        </div>
-
-        <nav className="space-y-1.5">
-          {[
-            { id: 'ride', name: 'Dashboard', icon: LayoutDashboard },
-            { id: 'trip', name: 'Perjalanan', icon: Compass },
-            { id: 'history', name: 'Riwayat', icon: History },
-            { id: 'shops', name: 'Bengkel', icon: MapPin },
-            { id: 'profile', name: 'Profil', icon: User },
-            { id: 'settings', name: 'Pengaturan', icon: Settings },
-          ].map(link => {
-            const Icon = link.icon;
-            const isActive = activeTab === link.id;
-            return (
+          <nav className="space-y-1 flex-1">
+            {navItems.map(link => {
+              const Icon = link.icon;
+              const isActive = activeTab === link.id;
+              return (
+                <button
+                  key={link.id}
+                  onClick={() => { setActiveTab(link.id); setSelectionMode(false); setShowMobileSidebar(false); }}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
+                    isActive ? 'bg-iosBlue/10 text-iosBlue font-bold' : 'text-iosGray hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-sm">{link.name}</span>
+                </button>
+              );
+            })}
+          </nav>
+          <div className="border-t border-white/[0.06] pt-4 space-y-1 mt-4">
+            {bottomItems.map(({ id, name, Icon }) => (
               <button
-                key={link.id}
-                onClick={() => {
-                  setActiveTab(link.id);
-                  setSelectionMode(false);
-                }}
-                className={`w-full flex items-center p-3 rounded-ios transition-all active:scale-[0.98] ${
-                  isActive 
-                    ? 'bg-iosBlue/10 text-iosBlue font-bold' 
-                    : 'text-iosGray hover:text-white hover:bg-white/[0.04]'
+                key={id}
+                onClick={() => { setActiveTab(id); setShowMobileSidebar(false); }}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
+                  activeTab === id ? 'bg-iosBlue/10 text-iosBlue font-bold' : 'text-iosGray hover:text-white hover:bg-white/[0.04]'
                 }`}
               >
                 <Icon className="w-5 h-5 flex-shrink-0" />
-                <span className="text-sm ml-3 hidden lg:inline-block">{link.name}</span>
+                <span className="text-sm">{name}</span>
               </button>
-            );
-          })}
-        </nav>
-      </div>
+            ))}
+          </div>
+        </div>
+      </>
+    );
+  };
 
-      <div className="space-y-1.5 border-t border-white/[0.06] pt-4">
-        <button
-          onClick={() => setActiveTab('profile')}
-          className={`w-full flex items-center p-3 rounded-ios transition-all ${
-            activeTab === 'profile' 
-              ? 'bg-iosBlue/10 text-iosBlue font-bold' 
-              : 'text-iosGray hover:text-white hover:bg-white/[0.04]'
-          }`}
-        >
-          <User className="w-5 h-5 flex-shrink-0" />
-          <span className="text-sm ml-3 hidden lg:inline-block">Profil</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('settings')}
-          className={`w-full flex items-center p-3 rounded-ios transition-all ${
-            activeTab === 'settings' 
-              ? 'bg-iosBlue/10 text-iosBlue font-bold' 
-              : 'text-iosGray hover:text-white hover:bg-white/[0.04]'
-          }`}
-        >
-          <Settings className="w-5 h-5 flex-shrink-0" />
-          <span className="text-sm ml-3 hidden lg:inline-block">Pengaturan</span>
-        </button>
-      </div>
-    </aside>
-  );
+  const renderDesktopSidebar = () => {
+    const navItems = [
+      { id: 'ride', name: 'Dashboard', icon: LayoutDashboard },
+      { id: 'trip', name: 'Perjalanan', icon: Compass },
+      { id: 'history', name: 'Riwayat', icon: History },
+      { id: 'shops', name: 'Bengkel', icon: MapPin },
+    ];
+    const bottomItems = [
+      { id: 'profile', name: 'Profil', Icon: User },
+      { id: 'settings', name: 'Pengaturan', Icon: Settings },
+    ];
+    const collapsed = sidebarCollapsed;
+
+    return (
+      <aside
+        className={`desktop-sidebar hidden md:flex flex-col border-r border-white/[0.06] bg-[#141416] min-h-screen justify-between select-none ${collapsed ? 'collapsed' : 'expanded'}`}
+        style={{ padding: collapsed ? '12px' : '20px' }}
+      >
+        <div className="space-y-5">
+          {/* Top: Logo + Toggle */}
+          <div className={`flex items-center ${collapsed ? 'flex-col gap-3' : 'justify-between'} px-1 pt-1`}>
+            <div
+              className="flex items-center gap-3 cursor-pointer flex-shrink-0"
+              onClick={() => setActiveTab('ride')}
+              title="MotoCare Dashboard"
+            >
+              <div className="w-9 h-9 rounded-xl bg-iosBlue flex items-center justify-center text-white shadow-[0_4px_12px_rgba(59,141,255,0.3)] flex-shrink-0">
+                <span className="inline-flex items-center justify-center"><i data-lucide="compass" className="w-4 h-4"></i></span>
+              </div>
+              <span className="sidebar-logo-text font-extrabold text-lg tracking-tight text-white">MotoCare</span>
+            </div>
+            <button
+              onClick={() => setSidebarCollapsed(!collapsed)}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-iosGray hover:text-white hover:bg-white/[0.06] transition-colors flex-shrink-0"
+              title={collapsed ? 'Buka menu' : 'Tutup menu'}
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Nav items */}
+          <nav className="space-y-0.5">
+            {navItems.map(link => {
+              const Icon = link.icon;
+              const isActive = activeTab === link.id;
+              return (
+                <button
+                  key={link.id}
+                  onClick={() => { setActiveTab(link.id); setSelectionMode(false); }}
+                  className={`sidebar-nav-item w-full flex items-center rounded-xl transition-all duration-150 active:scale-[0.97] ${
+                    collapsed ? 'justify-center p-3' : 'p-3 gap-0'
+                  } ${
+                    isActive
+                      ? 'bg-iosBlue/15 text-iosBlue'
+                      : 'text-[#8E8E93] hover:text-white hover:bg-white/[0.05]'
+                  }`}
+                >
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <span className={`sidebar-label text-sm font-semibold ${isActive ? 'font-bold' : ''} ${collapsed ? '' : 'ml-3'}`}>
+                    {link.name}
+                  </span>
+                  {collapsed && <span className="sidebar-tooltip">{link.name}</span>}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Bottom: Profile + Settings */}
+        <div className="space-y-0.5 border-t border-white/[0.06] pt-4">
+          {bottomItems.map(({ id, name, Icon }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`sidebar-nav-item w-full flex items-center rounded-xl transition-all duration-150 active:scale-[0.97] ${
+                collapsed ? 'justify-center p-3' : 'p-3'
+              } ${
+                activeTab === id
+                  ? 'bg-iosBlue/15 text-iosBlue'
+                  : 'text-[#8E8E93] hover:text-white hover:bg-white/[0.05]'
+              }`}
+              title={collapsed ? name : ''}
+            >
+              <Icon className="w-5 h-5 flex-shrink-0" />
+              <span className={`sidebar-label text-sm font-semibold ${activeTab === id ? 'font-bold' : ''} ${collapsed ? '' : 'ml-3'}`}>
+                {name}
+              </span>
+              {collapsed && <span className="sidebar-tooltip">{name}</span>}
+            </button>
+          ))}
+        </div>
+      </aside>
+    );
+  };
+
 
   const renderDesktopHeader = () => (
-    <header className="hidden md:flex items-center justify-between px-8 py-4 border-b border-white/[0.06] sticky top-0 bg-[#050506]/90 backdrop-blur-md z-20 select-none">
-      <div className="flex items-center gap-6">
-        <div className="relative">
+    <header className="hidden md:flex items-center justify-between px-6 py-3.5 border-b border-white/[0.06] sticky top-0 bg-[#050506]/95 backdrop-blur-md z-20 select-none">
+      <div className="flex items-center gap-5">
+        {/* Vehicle selector */}
+        <div className="relative" id="vehicle-dropdown-container">
           <button 
             onClick={() => setShowVehicleDropdown(!showVehicleDropdown)}
-            className="flex items-center gap-2 text-white bg-iosCard py-2 px-4 rounded-full border border-white/[0.08] active:scale-95 transition-transform"
+            className="flex items-center gap-2 text-white bg-iosCard py-2 px-4 rounded-full border border-white/[0.08] active:scale-95 transition-transform hover:border-white/[0.14]"
           >
             <Bike className="w-4 h-4 text-iosBlue" />
             <span className="font-bold text-sm max-w-[120px] truncate">{currentVehicle.name}</span>
-            <ChevronDown className={`w-4 h-4 text-iosGray transition-transform ${showVehicleDropdown ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-iosGray transition-transform duration-200 ${showVehicleDropdown ? 'rotate-180' : ''}`} />
           </button>
 
           {showVehicleDropdown && (
-            <div className="absolute top-12 left-0 glass-strong border border-white/[0.12] rounded-ios shadow-2xl p-2 w-56 z-50 animate-popover">
+            <div className="absolute top-12 left-0 bg-[#1C1C1E] border border-white/[0.12] rounded-ios shadow-2xl p-2 w-56 z-50 animate-popover">
               {vehicles.map(v => (
                 <button
                   key={v.id}
                   onClick={() => handleVehicleChange(v.id)}
-                  className="w-full flex items-center justify-between text-left py-2.5 px-3 hover:bg-white/[0.06] rounded-ios-sm mb-1 text-sm relative z-10"
+                  className="w-full flex items-center justify-between text-left py-2.5 px-3 hover:bg-white/[0.06] rounded-ios-sm mb-1 text-sm relative z-10 transition-colors"
                 >
                   <span className="font-medium text-white truncate max-w-[150px]">{v.name}</span>
                   {v.id === activeVehicleId && <Check className="w-4 h-4 text-iosBlue flex-shrink-0" />}
@@ -5164,7 +5480,8 @@ function App() {
           )}
         </div>
 
-        <div className="relative w-64">
+        {/* Search bar */}
+        <div className="relative w-56">
           <Search className="w-4 h-4 text-white/40 absolute top-3 left-4" />
           <input 
             type="text" 
@@ -5181,20 +5498,21 @@ function App() {
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="relative">
+      <div className="flex items-center gap-3">
+        {/* Notification bell */}
+        <div className="relative" id="notification-container">
           <button 
             onClick={() => setShowNotificationPopover(!showNotificationPopover)}
-            className="w-10 h-10 rounded-full bg-iosCard border border-white/[0.08] flex items-center justify-center text-iosGray hover:text-white relative active:scale-95 transition-transform"
+            className="w-9 h-9 rounded-full bg-iosCard border border-white/[0.08] flex items-center justify-center text-iosGray hover:text-white relative active:scale-95 transition-transform"
           >
             <Bell className="w-4 h-4" />
             {attentionComponents.length > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-iosRed rounded-full border border-[#050506]"></span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-iosRed rounded-full border border-[#050506]"></span>
             )}
           </button>
 
           {showNotificationPopover && (
-            <div className="absolute top-12 right-0 bg-[#1C1C1E] border border-iosBorder rounded-ios shadow-2xl p-4 w-72 z-50 space-y-3">
+            <div className="absolute top-11 right-0 bg-[#1C1C1E] border border-[#343438] rounded-ios shadow-2xl p-4 w-72 z-50 space-y-3 animate-popover">
               <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
                 <span className="font-bold text-xs text-white">Notifikasi</span>
                 <span className="text-[10px] bg-iosRed/15 text-iosRed px-2 py-0.5 rounded-full font-bold">
@@ -5224,21 +5542,66 @@ function App() {
           )}
         </div>
 
-        <div 
-          onClick={() => setActiveTab('profile')}
-          className="flex items-center gap-2.5 bg-iosCard py-1.5 pl-2.5 pr-4 rounded-full border border-white/[0.08] cursor-pointer hover:bg-white/[0.02]"
-        >
-          <div className="w-7 h-7 rounded-full bg-iosBlue/15 text-iosBlue flex items-center justify-center text-xs font-bold flex-shrink-0 overflow-hidden">
-            {profilePic ? (
-              <img src={profilePic} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <User className="w-3.5 h-3.5" />
-            )}
-          </div>
-          <div className="flex flex-col text-left min-w-0">
-            <span className="text-xs font-bold text-white leading-tight truncate max-w-[120px]">{user ? user.email : 'Akun Tamu'}</span>
-            <span className="text-[9px] text-iosGray">{user ? 'Supabase' : 'Offline'} &bull; Profil</span>
-          </div>
+        {/* Profile Avatar + Dropdown */}
+        <div className="relative" id="profile-dropdown-container">
+          <button
+            onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+            className="flex items-center gap-2.5 bg-iosCard py-1.5 pl-2.5 pr-3.5 rounded-full border border-white/[0.08] cursor-pointer hover:bg-white/[0.04] active:scale-95 transition-all"
+          >
+            <div className="w-7 h-7 rounded-full bg-iosBlue/15 text-iosBlue flex items-center justify-center text-xs font-bold flex-shrink-0 overflow-hidden">
+              {profilePic ? (
+                <img src={profilePic} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-3.5 h-3.5" />
+              )}
+            </div>
+            <div className="flex flex-col text-left min-w-0">
+              <span className="text-xs font-bold text-white leading-tight truncate max-w-[110px]">{user ? (user.user_metadata?.full_name || user.email?.split('@')[0] || 'Pengguna') : 'Akun Tamu'}</span>
+              <span className="text-[9px] text-iosGray">{user ? 'Aktif' : 'Mode Offline'}</span>
+            </div>
+            <ChevronDown className={`w-3.5 h-3.5 text-iosGray transition-transform duration-200 ${showProfileDropdown ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showProfileDropdown && (
+            <div className="profile-dropdown">
+              <div className="px-4 py-3 border-b border-white/[0.06]">
+                <p className="text-xs font-bold text-white truncate">{user ? (user.user_metadata?.full_name || user.email || 'Pengguna') : 'Akun Tamu'}</p>
+                <p className="text-[10px] text-iosGray mt-0.5">{user ? 'Supabase Cloud' : 'Penyimpanan Lokal'}</p>
+              </div>
+              <div className="py-1">
+                <div
+                  className="profile-dropdown-item"
+                  onClick={() => { setActiveTab('profile'); setShowProfileDropdown(false); }}
+                >
+                  <User className="w-4 h-4 flex-shrink-0" />
+                  Profil
+                </div>
+                <div
+                  className="profile-dropdown-item"
+                  onClick={() => { setActiveTab('settings'); setShowProfileDropdown(false); }}
+                >
+                  <Settings className="w-4 h-4 flex-shrink-0" />
+                  Pengaturan
+                </div>
+                <div className="border-t border-white/[0.06] my-1" />
+                <div
+                  className="profile-dropdown-item danger"
+                  onClick={() => {
+                    setShowProfileDropdown(false);
+                    if (user && window.supabaseClient) {
+                      window.supabaseClient.auth.signOut();
+                    } else {
+                      localStorage.setItem('motocare_guest', 'true');
+                      window.location.reload();
+                    }
+                  }}
+                >
+                  <LogOut className="w-4 h-4 flex-shrink-0" />
+                  Keluar
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>
@@ -7294,6 +7657,7 @@ function App() {
   // Main React app return layout
   return (
     <div className="w-full min-h-screen flex flex-col md:flex-row text-white font-sans md:h-screen md:overflow-hidden bg-transparent">
+      {renderMobileSidebarDrawer()}
       {renderDesktopSidebar()}
 
       <div className="flex-1 flex flex-col min-w-0 md:overflow-hidden relative">
