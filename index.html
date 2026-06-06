@@ -283,6 +283,14 @@
       animation: scaleUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
+    @keyframes slideInUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .animate-slideInUp {
+      animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
     .pulse-effect {
       animation: pulseGlow 2.5s infinite ease-in-out;
     }
@@ -1693,6 +1701,8 @@ const Lock = createIconWrapper('Lock');
 const EyeOff = createIconWrapper('EyeOff');
 const LayoutDashboard = createIconWrapper('LayoutDashboard');
 const LogOut = createIconWrapper('LogOut');
+const LogIn = createIconWrapper('LogIn');
+const UserPlus = createIconWrapper('UserPlus');
 
 const CURRENT_DATE_STRING = '2026-05-30';
 const CURRENT_DATE = new Date(CURRENT_DATE_STRING);
@@ -1852,6 +1862,7 @@ function App() {
   const [showVehicleDropdown, setShowVehicleDropdown] = React.useState(false);
   const [showNotificationPopover, setShowNotificationPopover] = React.useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = React.useState(false);
+  const [showMobileProfileModal, setShowMobileProfileModal] = React.useState(false);
 
   // Close dropdowns on outside click
   React.useEffect(() => {
@@ -5165,8 +5176,8 @@ function App() {
 
       <div className="flex items-center gap-2">
         <button 
-          onClick={() => { setActiveTab('profile'); setSelectionMode(false); }}
-          className={`w-8 h-8 rounded-full glass flex items-center justify-center active:scale-90 transition-transform overflow-hidden ${activeTab === 'profile' ? 'border border-iosBlue text-iosBlue' : 'text-iosGray'}`}
+          onClick={() => setShowMobileProfileModal(true)}
+          className={`w-8 h-8 rounded-full glass flex items-center justify-center active:scale-90 transition-transform overflow-hidden ${showMobileProfileModal ? 'border border-iosBlue text-iosBlue' : 'text-iosGray'}`}
         >
           {profilePic ? (
             <img src={profilePic} alt="Profile" className="w-full h-full object-cover" />
@@ -5254,6 +5265,118 @@ function App() {
     );
   };
 
+  const renderMobileProfileModal = () => {
+    if (!showMobileProfileModal) return null;
+
+    return (
+      <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end">
+        {/* Overlay */}
+        <div 
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fadeIn"
+          onClick={() => setShowMobileProfileModal(false)}
+        />
+        
+        {/* Bottom Sheet */}
+        <div className="relative z-10 bg-[#1C1C1E] border-t border-white/[0.12] rounded-t-[24px] px-6 pt-3 pb-8 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] animate-slideInUp text-left">
+          {/* Grabber/Pull Bar */}
+          <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-6"></div>
+          
+          {/* Header */}
+          <div className="mb-6 text-center">
+            {user ? (
+              <>
+                <h3 className="text-base font-bold text-white truncate">{user.user_metadata?.full_name || user.email?.split('@')[0] || 'Pengguna'}</h3>
+                <p className="text-xs text-iosGray mt-0.5 truncate">{user.email}</p>
+              </>
+            ) : (
+              <>
+                <h3 className="text-base font-bold text-white">Akun Tamu</h3>
+                <p className="text-xs text-iosGray mt-0.5">Mode Offline</p>
+              </>
+            )}
+          </div>
+          
+          {/* Menu Options */}
+          <div className="space-y-3">
+            <button
+              onClick={() => {
+                setActiveTab('profile');
+                setShowMobileProfileModal(false);
+              }}
+              className="w-full flex items-center gap-3.5 bg-white/[0.04] active:bg-white/[0.08] border border-white/[0.06] p-4 rounded-2xl text-sm font-semibold text-white transition-all active:scale-[0.98] outline-none"
+            >
+              <User className="w-5 h-5 text-iosGray" />
+              <span>Profil</span>
+              <ChevronRight className="w-4 h-4 ml-auto text-iosGray" />
+            </button>
+            
+            <button
+              onClick={() => {
+                setActiveTab('settings');
+                setShowMobileProfileModal(false);
+              }}
+              className="w-full flex items-center gap-3.5 bg-white/[0.04] active:bg-white/[0.08] border border-white/[0.06] p-4 rounded-2xl text-sm font-semibold text-white transition-all active:scale-[0.98] outline-none"
+            >
+              <Settings className="w-5 h-5 text-iosGray" />
+              <span>Pengaturan</span>
+              <ChevronRight className="w-4 h-4 ml-auto text-iosGray" />
+            </button>
+
+            <div className="border-t border-white/[0.06] my-4" />
+
+            {user ? (
+              <button
+                onClick={() => {
+                  setShowMobileProfileModal(false);
+                  if (window.supabaseClient) {
+                    window.supabaseClient.auth.signOut();
+                  }
+                }}
+                className="w-full flex items-center justify-center gap-2 bg-iosRed/15 active:bg-iosRed/25 border border-iosRed/30 p-4 rounded-2xl text-sm font-bold text-iosRed transition-all active:scale-[0.98] outline-none"
+              >
+                <LogOut className="w-5 h-5" />
+                <span>Keluar Akun</span>
+              </button>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setShowMobileProfileModal(false);
+                    localStorage.setItem('motocare_guest', 'false');
+                    setGuestMode(false);
+                    setAuthMode('login');
+                  }}
+                  className="flex items-center justify-center gap-2 bg-iosBlue hover:bg-iosBlue/90 text-white p-4 rounded-2xl text-sm font-bold transition-all active:scale-[0.98] shadow-lg shadow-iosBlue/20 outline-none"
+                >
+                  <LogIn className="w-5 h-5" />
+                  <span>Masuk Akun</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setShowMobileProfileModal(false);
+                    localStorage.setItem('motocare_guest', 'false');
+                    setGuestMode(false);
+                    setAuthMode('register');
+                  }}
+                  className="flex items-center justify-center gap-2 bg-white/[0.06] hover:bg-white/[0.1] text-amber-400 border border-amber-400/30 p-4 rounded-2xl text-sm font-bold transition-all active:scale-[0.98] outline-none"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  <span>Daftar Akun</span>
+                </button>
+              </div>
+            )}
+            
+            <button
+              onClick={() => setShowMobileProfileModal(false)}
+              className="w-full bg-[#2C2C2E] hover:bg-[#3A3A3C] text-white py-4 rounded-2xl font-bold text-sm mt-3 active:scale-[0.98] transition-transform outline-none"
+            >
+              Batal
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const renderDesktopHeader = () => (
     <header className="hidden md:flex items-center justify-between px-6 py-3.5 border-b border-white/[0.06] sticky top-0 bg-[#050506]/95 backdrop-blur-md z-20 select-none">
@@ -5380,41 +5503,77 @@ function App() {
 
           {showProfileDropdown && (
             <div className="profile-dropdown">
-              <div className="px-4 py-3 border-b border-white/[0.06]">
-                <p className="text-xs font-bold text-white truncate">{user ? (user.user_metadata?.full_name || user.email || 'Pengguna') : 'Akun Tamu'}</p>
-                <p className="text-[10px] text-iosGray mt-0.5">{user ? 'Supabase Cloud' : 'Penyimpanan Lokal'}</p>
+              <div className="px-4 py-3 border-b border-white/[0.06] text-left">
+                {user ? (
+                  <>
+                    <p className="text-xs font-bold text-white truncate">{user.user_metadata?.full_name || user.email?.split('@')[0] || 'Pengguna'}</p>
+                    <p className="text-[10px] text-iosGray truncate mt-0.5">{user.email}</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-xs font-bold text-white">Akun Tamu</p>
+                    <p className="text-[10px] text-iosGray mt-0.5">Mode Offline</p>
+                  </>
+                )}
               </div>
               <div className="py-1">
-                <div
-                  className="profile-dropdown-item"
+                <button
+                  className="profile-dropdown-item w-full text-left bg-transparent border-0 outline-none"
                   onClick={() => { setActiveTab('profile'); setShowProfileDropdown(false); }}
                 >
                   <User className="w-4 h-4 flex-shrink-0" />
                   Profil
-                </div>
-                <div
-                  className="profile-dropdown-item"
+                </button>
+                <button
+                  className="profile-dropdown-item w-full text-left bg-transparent border-0 outline-none"
                   onClick={() => { setActiveTab('settings'); setShowProfileDropdown(false); }}
                 >
                   <Settings className="w-4 h-4 flex-shrink-0" />
                   Pengaturan
-                </div>
+                </button>
                 <div className="border-t border-white/[0.06] my-1" />
-                <div
-                  className="profile-dropdown-item danger"
-                  onClick={() => {
-                    setShowProfileDropdown(false);
-                    if (user && window.supabaseClient) {
-                      window.supabaseClient.auth.signOut();
-                    } else {
-                      localStorage.setItem('motocare_guest', 'true');
-                      window.location.reload();
-                    }
-                  }}
-                >
-                  <LogOut className="w-4 h-4 flex-shrink-0" />
-                  Keluar
-                </div>
+                
+                {user ? (
+                  <button
+                    className="profile-dropdown-item danger w-full text-left bg-transparent border-0 outline-none"
+                    onClick={() => {
+                      setShowProfileDropdown(false);
+                      if (window.supabaseClient) {
+                        window.supabaseClient.auth.signOut();
+                      }
+                    }}
+                  >
+                    <LogOut className="w-4 h-4 flex-shrink-0" />
+                    Keluar Akun
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      className="profile-dropdown-item text-iosBlue w-full text-left bg-transparent border-0 outline-none"
+                      onClick={() => {
+                        setShowProfileDropdown(false);
+                        localStorage.setItem('motocare_guest', 'false');
+                        setGuestMode(false);
+                        setAuthMode('login');
+                      }}
+                    >
+                      <LogIn className="w-4 h-4 flex-shrink-0 text-iosBlue" />
+                      Masuk Akun
+                    </button>
+                    <button
+                      className="profile-dropdown-item text-amber-400 w-full text-left bg-transparent border-0 outline-none"
+                      onClick={() => {
+                        setShowProfileDropdown(false);
+                        localStorage.setItem('motocare_guest', 'false');
+                        setGuestMode(false);
+                        setAuthMode('register');
+                      }}
+                    >
+                      <Sparkles className="w-4 h-4 flex-shrink-0 text-amber-400" />
+                      Daftar Akun
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -7481,6 +7640,7 @@ function App() {
   // Main React app return layout
   return (
     <div className="w-full min-h-screen flex flex-col md:flex-row text-white font-sans md:h-screen md:overflow-hidden bg-transparent">
+      {renderMobileProfileModal()}
       {renderDesktopSidebar()}
 
       <div className="flex-1 flex flex-col min-w-0 md:overflow-hidden relative">
