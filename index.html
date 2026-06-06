@@ -306,57 +306,13 @@
     }
 
     /* ====================================================
-       COLLAPSIBLE SIDEBAR STYLES
+       PERMANENT ICON-ONLY SIDEBAR STYLES
        ==================================================== */
 
-    /* Sidebar transition */
     .desktop-sidebar {
-      transition: width 250ms cubic-bezier(0.4, 0, 0.2, 1),
-                  padding 250ms cubic-bezier(0.4, 0, 0.2, 1);
+      width: 76px;
       overflow: hidden;
       flex-shrink: 0;
-    }
-
-    .desktop-sidebar.collapsed {
-      width: 72px;
-    }
-
-    .desktop-sidebar.expanded {
-      width: 260px;
-    }
-
-    /* Sidebar nav item text fade */
-    .sidebar-label {
-      transition: opacity 200ms ease, max-width 250ms ease;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-
-    .desktop-sidebar.collapsed .sidebar-label {
-      opacity: 0;
-      max-width: 0;
-    }
-
-    .desktop-sidebar.expanded .sidebar-label {
-      opacity: 1;
-      max-width: 160px;
-    }
-
-    /* Sidebar logo fade */
-    .sidebar-logo-text {
-      transition: opacity 200ms ease, max-width 250ms ease;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-
-    .desktop-sidebar.collapsed .sidebar-logo-text {
-      opacity: 0;
-      max-width: 0;
-    }
-
-    .desktop-sidebar.expanded .sidebar-logo-text {
-      opacity: 1;
-      max-width: 160px;
     }
 
     /* Sidebar tooltip */
@@ -441,49 +397,6 @@
     .profile-dropdown-item.danger:hover {
       background: rgba(229,72,77,0.1);
       color: #E5484D;
-    }
-
-    /* Mobile drawer overlay */
-    .mobile-sidebar-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      z-index: 150;
-      animation: fadeIn 200ms ease forwards;
-    }
-
-    .mobile-sidebar-drawer {
-      position: fixed;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      width: 280px;
-      background: #1C1C1E;
-      border-right: 1px solid #2C2C2E;
-      z-index: 160;
-      display: flex;
-      flex-direction: column;
-      padding: 20px 16px;
-      animation: slideInLeft 250ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
-
-    @keyframes slideInLeft {
-      from { transform: translateX(-100%); }
-      to { transform: translateX(0); }
-    }
-
-    /* Tablet: auto-collapse at 768-1200px */
-    @media (min-width: 768px) and (max-width: 1200px) {
-      .desktop-sidebar.expanded {
-        width: 72px;
-      }
-      .desktop-sidebar.expanded .sidebar-label,
-      .desktop-sidebar.expanded .sidebar-logo-text {
-        opacity: 0;
-        max-width: 0;
-      }
     }
 
     /* Mobile specific style refactoring (max-width: 768px) */
@@ -636,9 +549,17 @@
   <!-- React Mount Root -->
   <div id="root" class="w-full min-h-screen flex flex-col bg-transparent relative">
     <!-- Loading State before React Hydrates -->
-    <div class="flex-1 flex flex-col items-center justify-center bg-transparent text-white">
-      <div class="w-16 h-16 border-4 border-t-iosBlue border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-      <p class="mt-4 text-iosGray text-sm tracking-wide">Memuat MotoCare...</p>
+    <div class="flex-1 flex flex-col items-center justify-center bg-transparent text-white select-none">
+      <div class="flex flex-col items-center space-y-4 animate-pulse" style="animation-duration: 3s;">
+        <div class="w-16 h-16 bg-[#3B82F6] rounded-[18px] flex items-center justify-center text-white" style="box-shadow: 0 0 24px rgba(59, 130, 246, 0.6)">
+          <img src="/android-chrome-192x192.png" alt="MotoCare Logo" class="w-11 h-11 object-contain" />
+        </div>
+        <h1 class="text-2xl font-black tracking-tight text-white mt-2">MotoCare</h1>
+        <div class="flex flex-col items-center pt-8">
+          <div class="w-8 h-8 border-4 border-t-iosBlue border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+          <p class="mt-3 text-iosGray text-xs tracking-wider uppercase font-extrabold">Memuat MotoCare...</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1771,7 +1692,6 @@ const Camera = createIconWrapper('Camera');
 const Lock = createIconWrapper('Lock');
 const EyeOff = createIconWrapper('EyeOff');
 const LayoutDashboard = createIconWrapper('LayoutDashboard');
-const Menu = createIconWrapper('Menu');
 const LogOut = createIconWrapper('LogOut');
 
 const CURRENT_DATE_STRING = '2026-05-30';
@@ -1932,18 +1852,6 @@ function App() {
   const [showVehicleDropdown, setShowVehicleDropdown] = React.useState(false);
   const [showNotificationPopover, setShowNotificationPopover] = React.useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = React.useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(() => {
-    const saved = localStorage.getItem('motocare_sidebar_collapsed');
-    return saved !== null ? saved === 'true' : true;
-  });
-
-  // Persist sidebar state to localStorage
-  React.useEffect(() => {
-    localStorage.setItem('motocare_sidebar_collapsed', String(sidebarCollapsed));
-  }, [sidebarCollapsed]);
-
-  // Mobile sidebar drawer
-  const [showMobileSidebar, setShowMobileSidebar] = React.useState(false);
 
   // Close dropdowns on outside click
   React.useEffect(() => {
@@ -3459,8 +3367,8 @@ function App() {
 
         <div className="w-full max-w-[420px] glass-strong border border-white/[0.12] rounded-[32px] p-6 md:p-8 space-y-6 animate-scaleUp relative z-10">
           <div className="text-center space-y-2">
-            <div className="w-12 h-12 bg-iosBlue rounded-[14px] mx-auto flex items-center justify-center text-white shadow-[0_4px_12px_rgba(59,141,255,0.3)]">
-              <span className="inline-flex items-center justify-center"><i data-lucide="compass" className="w-6 h-6 animate-pulse"></i></span>
+            <div className="w-12 h-12 bg-[#3B82F6] rounded-[14px] mx-auto flex items-center justify-center text-white animate-scaleUp" style={{ boxShadow: '0 0 16px rgba(59, 130, 246, 0.6)' }}>
+              <img src="/android-chrome-192x192.png" alt="MotoCare Logo" className="w-8 h-8 object-contain" />
             </div>
             <h2 className="text-2xl font-black tracking-tight text-white pt-2">MotoCare</h2>
             <p className="text-xs text-iosGray">Catat dan pantau riwayat servis motor Anda secara cerdas</p>
@@ -5217,15 +5125,6 @@ function App() {
   const renderMobileHeader = () => (
     <div className="glass-header sticky top-0 z-30 px-4 pt-3 pb-3 flex items-center justify-between border-b border-white/[0.06] md:hidden select-none">
       <div className="flex items-center gap-2">
-        {/* Hamburger button to open mobile sidebar drawer */}
-        <button
-          onClick={() => setShowMobileSidebar(true)}
-          className="w-8 h-8 rounded-full glass flex items-center justify-center text-iosGray active:scale-90 transition-transform"
-          aria-label="Buka menu navigasi"
-        >
-          <Menu className="w-4 h-4" />
-        </button>
-
         <div className="relative" id="vehicle-dropdown-container-mobile">
           <button 
             onClick={() => setShowVehicleDropdown(!showVehicleDropdown)}
@@ -5279,69 +5178,6 @@ function App() {
     </div>
   );
 
-  const renderMobileSidebarDrawer = () => {
-    if (!showMobileSidebar) return null;
-    const navItems = [
-      { id: 'ride', name: 'Dashboard', icon: LayoutDashboard },
-      { id: 'trip', name: 'Perjalanan', icon: Compass },
-      { id: 'history', name: 'Riwayat', icon: History },
-      { id: 'shops', name: 'Bengkel', icon: MapPin },
-    ];
-    const bottomItems = [
-      { id: 'profile', name: 'Profil', Icon: User },
-      { id: 'settings', name: 'Pengaturan', Icon: Settings },
-    ];
-    return (
-      <>
-        <div className="mobile-sidebar-overlay md:hidden" onClick={() => setShowMobileSidebar(false)} />
-        <div className="mobile-sidebar-drawer md:hidden">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => { setActiveTab('ride'); setShowMobileSidebar(false); }}>
-              <div className="w-9 h-9 rounded-xl bg-iosBlue flex items-center justify-center text-white shadow-[0_4px_12px_rgba(59,141,255,0.3)] flex-shrink-0">
-                <span className="inline-flex items-center justify-center"><i data-lucide="compass" className="w-4 h-4"></i></span>
-              </div>
-              <span className="font-extrabold text-lg tracking-tight text-white">MotoCare</span>
-            </div>
-            <button onClick={() => setShowMobileSidebar(false)} className="w-8 h-8 rounded-lg flex items-center justify-center text-iosGray hover:text-white hover:bg-white/[0.06] transition-colors">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          <nav className="space-y-1 flex-1">
-            {navItems.map(link => {
-              const Icon = link.icon;
-              const isActive = activeTab === link.id;
-              return (
-                <button
-                  key={link.id}
-                  onClick={() => { setActiveTab(link.id); setSelectionMode(false); setShowMobileSidebar(false); }}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-                    isActive ? 'bg-iosBlue/10 text-iosBlue font-bold' : 'text-iosGray hover:text-white hover:bg-white/[0.04]'
-                  }`}
-                >
-                  <Icon className="w-5 h-5 flex-shrink-0" />
-                  <span className="text-sm">{link.name}</span>
-                </button>
-              );
-            })}
-          </nav>
-          <div className="border-t border-white/[0.06] pt-4 space-y-1 mt-4">
-            {bottomItems.map(({ id, name, Icon }) => (
-              <button
-                key={id}
-                onClick={() => { setActiveTab(id); setShowMobileSidebar(false); }}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-                  activeTab === id ? 'bg-iosBlue/10 text-iosBlue font-bold' : 'text-iosGray hover:text-white hover:bg-white/[0.04]'
-                }`}
-              >
-                <Icon className="w-5 h-5 flex-shrink-0" />
-                <span className="text-sm">{name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </>
-    );
-  };
 
   const renderDesktopSidebar = () => {
     const navItems = [
@@ -5354,37 +5190,25 @@ function App() {
       { id: 'profile', name: 'Profil', Icon: User },
       { id: 'settings', name: 'Pengaturan', Icon: Settings },
     ];
-    const collapsed = sidebarCollapsed;
 
     return (
-      <aside
-        className={`desktop-sidebar hidden md:flex flex-col border-r border-white/[0.06] bg-[#141416] min-h-screen justify-between select-none ${collapsed ? 'collapsed' : 'expanded'}`}
-        style={{ padding: collapsed ? '12px' : '20px' }}
-      >
-        <div className="space-y-5">
-          {/* Top: Logo + Toggle */}
-          <div className={`flex items-center ${collapsed ? 'flex-col gap-3' : 'justify-between'} px-1 pt-1`}>
+      <aside className="desktop-sidebar hidden md:flex flex-col border-r border-white/[0.06] bg-[#141416] min-h-screen justify-between select-none w-[76px] p-3">
+        <div className="space-y-6">
+          {/* Top: Logo */}
+          <div className="flex items-center justify-center pt-2">
             <div
-              className="flex items-center gap-3 cursor-pointer flex-shrink-0"
+              className="cursor-pointer flex-shrink-0 transition-transform active:scale-95"
               onClick={() => setActiveTab('ride')}
               title="MotoCare Dashboard"
             >
-              <div className="w-9 h-9 rounded-xl bg-iosBlue flex items-center justify-center text-white shadow-[0_4px_12px_rgba(59,141,255,0.3)] flex-shrink-0">
-                <span className="inline-flex items-center justify-center"><i data-lucide="compass" className="w-4 h-4"></i></span>
+              <div className="w-11 h-11 bg-[#3B82F6] rounded-[14px] flex items-center justify-center text-white flex-shrink-0" style={{ boxShadow: '0 0 16px rgba(59, 130, 246, 0.6)' }}>
+                <img src="/android-chrome-192x192.png" alt="MotoCare" className="w-8 h-8 object-contain" />
               </div>
-              <span className="sidebar-logo-text font-extrabold text-lg tracking-tight text-white">MotoCare</span>
             </div>
-            <button
-              onClick={() => setSidebarCollapsed(!collapsed)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-iosGray hover:text-white hover:bg-white/[0.06] transition-colors flex-shrink-0"
-              title={collapsed ? 'Buka menu' : 'Tutup menu'}
-            >
-              <Menu className="w-4 h-4" />
-            </button>
           </div>
 
           {/* Nav items */}
-          <nav className="space-y-0.5">
+          <nav className="space-y-2">
             {navItems.map(link => {
               const Icon = link.icon;
               const isActive = activeTab === link.id;
@@ -5392,19 +5216,14 @@ function App() {
                 <button
                   key={link.id}
                   onClick={() => { setActiveTab(link.id); setSelectionMode(false); }}
-                  className={`sidebar-nav-item w-full flex items-center rounded-xl transition-all duration-150 active:scale-[0.97] ${
-                    collapsed ? 'justify-center p-3' : 'p-3 gap-0'
-                  } ${
+                  className={`sidebar-nav-item w-full flex items-center justify-center rounded-xl transition-all duration-150 active:scale-[0.97] p-3 ${
                     isActive
-                      ? 'bg-iosBlue/15 text-iosBlue'
+                      ? 'bg-iosBlue/15 text-iosBlue font-bold'
                       : 'text-[#8E8E93] hover:text-white hover:bg-white/[0.05]'
                   }`}
                 >
-                  <Icon className="w-5 h-5 flex-shrink-0" />
-                  <span className={`sidebar-label text-sm font-semibold ${isActive ? 'font-bold' : ''} ${collapsed ? '' : 'ml-3'}`}>
-                    {link.name}
-                  </span>
-                  {collapsed && <span className="sidebar-tooltip">{link.name}</span>}
+                  <Icon className="w-5.5 h-5.5 flex-shrink-0" />
+                  <span className="sidebar-tooltip">{link.name}</span>
                 </button>
               );
             })}
@@ -5412,27 +5231,24 @@ function App() {
         </div>
 
         {/* Bottom: Profile + Settings */}
-        <div className="space-y-0.5 border-t border-white/[0.06] pt-4">
-          {bottomItems.map(({ id, name, Icon }) => (
-            <button
-              key={id}
-              onClick={() => setActiveTab(id)}
-              className={`sidebar-nav-item w-full flex items-center rounded-xl transition-all duration-150 active:scale-[0.97] ${
-                collapsed ? 'justify-center p-3' : 'p-3'
-              } ${
-                activeTab === id
-                  ? 'bg-iosBlue/15 text-iosBlue'
-                  : 'text-[#8E8E93] hover:text-white hover:bg-white/[0.05]'
-              }`}
-              title={collapsed ? name : ''}
-            >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              <span className={`sidebar-label text-sm font-semibold ${activeTab === id ? 'font-bold' : ''} ${collapsed ? '' : 'ml-3'}`}>
-                {name}
-              </span>
-              {collapsed && <span className="sidebar-tooltip">{name}</span>}
-            </button>
-          ))}
+        <div className="space-y-2 border-t border-white/[0.06] pt-4 mb-2">
+          {bottomItems.map(({ id, name, Icon }) => {
+            const isActive = activeTab === id;
+            return (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`sidebar-nav-item w-full flex items-center justify-center rounded-xl transition-all duration-150 active:scale-[0.97] p-3 ${
+                  isActive
+                    ? 'bg-iosBlue/15 text-iosBlue font-bold'
+                    : 'text-[#8E8E93] hover:text-white hover:bg-white/[0.05]'
+                }`}
+              >
+                <Icon className="w-5.5 h-5.5 flex-shrink-0" />
+                <span className="sidebar-tooltip">{name}</span>
+              </button>
+            );
+          })}
         </div>
       </aside>
     );
@@ -7643,9 +7459,17 @@ function App() {
   // Render Auth Screen or Loading
   if (loadingAuth) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#050506] text-white">
-        <div className="w-16 h-16 border-4 border-t-iosBlue border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-iosGray text-sm tracking-wide">Memuat MotoCare...</p>
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#050506] text-white select-none">
+        <div className="flex flex-col items-center space-y-4 animate-pulse" style={{ animationDuration: '3s' }}>
+          <div className="w-16 h-16 bg-[#3B82F6] rounded-[18px] flex items-center justify-center text-white" style={{ boxShadow: '0 0 24px rgba(59, 130, 246, 0.6)' }}>
+            <img src="/android-chrome-192x192.png" alt="MotoCare Logo" className="w-11 h-11 object-contain" />
+          </div>
+          <h1 className="text-2xl font-black tracking-tight text-white mt-2">MotoCare</h1>
+          <div className="flex flex-col items-center pt-8">
+            <div className="w-8 h-8 border-4 border-t-iosBlue border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+            <p className="mt-3 text-iosGray text-xs tracking-wider uppercase font-extrabold">Memuat MotoCare...</p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -7657,7 +7481,6 @@ function App() {
   // Main React app return layout
   return (
     <div className="w-full min-h-screen flex flex-col md:flex-row text-white font-sans md:h-screen md:overflow-hidden bg-transparent">
-      {renderMobileSidebarDrawer()}
       {renderDesktopSidebar()}
 
       <div className="flex-1 flex flex-col min-w-0 md:overflow-hidden relative">
