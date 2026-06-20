@@ -2003,6 +2003,9 @@ function App() {
   const [appLanguage, setAppLanguage] = React.useState(() => localStorage.getItem('motocare_lang') || 'id');
   const [appUnit, setAppUnit] = React.useState(() => localStorage.getItem('motocare_unit') || 'km');
 
+  // Loading bypass state (shows escape button if auth takes too long)
+  const [showLoadingBypass, setShowLoadingBypass] = React.useState(false);
+
   // Load standard addable components
   const STANDARD_ADDABLE_COMPONENTS = [
     { name: 'Cakram Rem', icon: 'Disc', intervalKm: 25000, intervalMonths: 24, warning: 'Cakram tipis/bergelombang membuat rem bergetar dan tidak pakem, merusak caliper.', advice: 'Cek ketebalan cakram rem secara berkala.', priority: true },
@@ -2119,6 +2122,16 @@ function App() {
     if (!loadingAuth && window.supabaseOfflineFallbackActive) {
       showToast("Mode offline/local aktif", "error");
       delete window.supabaseOfflineFallbackActive;
+    }
+  }, [loadingAuth]);
+
+  // Show bypass button after 6 seconds if still loading
+  React.useEffect(() => {
+    if (loadingAuth) {
+      const t = setTimeout(() => setShowLoadingBypass(true), 6000);
+      return () => clearTimeout(t);
+    } else {
+      setShowLoadingBypass(false);
     }
   }, [loadingAuth]);
 
@@ -7895,17 +7908,6 @@ function App() {
       </div>
     </ModalWrapper>
   );
-
-  // Show bypass button after 6 seconds if still loading
-  const [showLoadingBypass, setShowLoadingBypass] = React.useState(false);
-  React.useEffect(() => {
-    if (loadingAuth) {
-      const t = setTimeout(() => setShowLoadingBypass(true), 6000);
-      return () => clearTimeout(t);
-    } else {
-      setShowLoadingBypass(false);
-    }
-  }, [loadingAuth]);
 
   // Render Auth Screen or Loading
   if (loadingAuth) {
