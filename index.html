@@ -1970,18 +1970,33 @@ function App() {
     return status.isUrgent;
   });
 
-  // Auth/Session check effect with 2s timeout
+  // Hard failsafe: if loadingAuth is still true after 12s, force guest mode
+  React.useEffect(() => {
+    const failsafeTimer = setTimeout(() => {
+      if (loadingAuth) {
+        console.warn('MotoCare: 12s failsafe triggered. Forcing guest mode.');
+        setUser(null);
+        setGuestMode(true);
+        localStorage.setItem('motocare_guest', 'true');
+        setLoadingAuth(false);
+      }
+    }, 12000);
+    return () => clearTimeout(failsafeTimer);
+  }, [loadingAuth]);
+
+  // Auth/Session check effect with 8s timeout (to handle Supabase cold start after resume/pause)
   React.useEffect(() => {
     let subscription = null;
     const checkSession = async () => {
       if (window.supabaseClient) {
         try {
+          // 8 seconds timeout — Supabase cold start after resume can take 5-8s
           const sessionPromise = window.supabaseClient.auth.getSession();
-          const timeoutPromise = new Promise(resolve => setTimeout(() => resolve('timeout'), 2000));
+          const timeoutPromise = new Promise(resolve => setTimeout(() => resolve('timeout'), 8000));
           
           const result = await Promise.race([sessionPromise, timeoutPromise]);
           if (result === 'timeout') {
-            console.warn("Supabase auth check timed out (2s). Booting Guest Mode.");
+            console.warn('Supabase auth check timed out (8s). Booting Guest Mode.');
             setUser(null);
             setGuestMode(true);
             localStorage.setItem('motocare_guest', 'true');
@@ -2010,13 +2025,14 @@ function App() {
             subscription = data.subscription;
           }
         } catch (err) {
-          console.error("Auth check error:", err);
+          console.error('Auth check error:', err);
           setUser(null);
           setGuestMode(true);
           localStorage.setItem('motocare_guest', 'true');
           window.supabaseOfflineFallbackActive = true;
         }
       } else {
+        // Supabase not configured — immediate guest mode
         setUser(null);
         setGuestMode(true);
         localStorage.setItem('motocare_guest', 'true');
@@ -5135,7 +5151,7 @@ function App() {
 
   const renderMobileHeader = () => (
     <div className="glass-header sticky top-0 z-30 px-4 py-3 flex items-center justify-between gap-3 border-b border-white/[0.06] md:hidden select-none">
-      <div className="relative flex-1 max-w-[240px]" id="vehicle-dropdown-container-mobile">
+      <div className="flex-1 max-w-[240px]" id="vehicle-dropdown-container-mobile">
         <button 
           onClick={() => setShowVehicleDropdown(!showVehicleDropdown)}
           className="w-full flex items-center justify-between gap-3 text-white glass-pill h-[52px] px-4 rounded-full active:scale-95 transition-transform"
@@ -5146,32 +5162,6 @@ function App() {
           </div>
           <ChevronDown className={`w-4 h-4 text-iosGray flex-shrink-0 transition-transform duration-200 ${showVehicleDropdown ? 'rotate-180' : ''}`} />
         </button>
-        
-        {showVehicleDropdown && (
-          <div className="absolute top-[58px] left-0 glass-strong border border-white/[0.12] rounded-ios shadow-2xl p-2 w-64 z-50 animate-popover">
-            {vehicles.map(v => (
-              <button
-                key={v.id}
-                onClick={() => handleVehicleChange(v.id)}
-                className="w-full flex items-center justify-between text-left py-2 px-3 hover:bg-white/[0.06] rounded-ios-sm transition-colors mb-1 text-sm relative z-10"
-              >
-                <span className="font-medium text-white truncate max-w-[150px]">{v.name}</span>
-                {v.id === activeVehicleId && <Check className="w-4 h-4 text-iosBlue flex-shrink-0" />}
-              </button>
-            ))}
-            <hr className="border-white/[0.08] my-1" />
-            <button
-              onClick={() => {
-                setFormErrors({});
-                setActiveModal('addVehicle');
-                setShowVehicleDropdown(false);
-              }}
-              className="w-full flex items-center gap-2 text-left py-2 px-3 hover:bg-iosBlue/10 text-iosBlue rounded-ios-sm transition-colors text-sm font-semibold relative z-10"
-            >
-              <Plus className="w-4 h-4" /> Tambah Motor
-            </button>
-          </div>
-        )}
       </div>
 
       <button 
@@ -5186,6 +5176,43 @@ function App() {
       </button>
     </div>
   );
+
+  const renderMobileVehicleDropdown = () => {
+    if (!showVehicleDropdown) return null;
+    return (
+      <>
+        {/* Invisible backdrop to close dropdown on outside click */}
+        <div 
+          className="fixed inset-0 z-[90] md:hidden" 
+          onClick={() => setShowVehicleDropdown(false)} 
+        />
+        {/* Dropdown menu — fixed position so it escapes all overflow:hidden parents */}
+        <div className="fixed top-[74px] left-4 z-[91] md:hidden bg-[#1C1C1E] border border-white/[0.12] rounded-[18px] shadow-2xl p-2 w-[260px] animate-popover">
+          {vehicles.map(v => (
+            <button
+              key={v.id}
+              onClick={() => { handleVehicleChange(v.id); setShowVehicleDropdown(false); }}
+              className="w-full flex items-center justify-between text-left py-2.5 px-3 hover:bg-white/[0.06] rounded-[12px] transition-colors mb-1 text-sm"
+            >
+              <span className="font-medium text-white truncate max-w-[180px]">{v.name}</span>
+              {v.id === activeVehicleId && <Check className="w-4 h-4 text-iosBlue flex-shrink-0" />}
+            </button>
+          ))}
+          <hr className="border-white/[0.08] my-1" />
+          <button
+            onClick={() => {
+              setFormErrors({});
+              setActiveModal('addVehicle');
+              setShowVehicleDropdown(false);
+            }}
+            className="w-full flex items-center gap-2 text-left py-2.5 px-3 hover:bg-iosBlue/10 text-iosBlue rounded-[12px] transition-colors text-sm font-semibold"
+          >
+            <Plus className="w-4 h-4" /> Tambah Motor
+          </button>
+        </div>
+      </>
+    );
+  };
 
 
   const renderDesktopSidebar = () => {
@@ -7801,17 +7828,44 @@ function App() {
     </ModalWrapper>
   );
 
+  // Show bypass button after 6 seconds if still loading
+  const [showLoadingBypass, setShowLoadingBypass] = React.useState(false);
+  React.useEffect(() => {
+    if (loadingAuth) {
+      const t = setTimeout(() => setShowLoadingBypass(true), 6000);
+      return () => clearTimeout(t);
+    } else {
+      setShowLoadingBypass(false);
+    }
+  }, [loadingAuth]);
+
   // Render Auth Screen or Loading
   if (loadingAuth) {
     return (
       <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#050506] text-white select-none">
-        <div className="flex flex-col items-center space-y-4 animate-pulse" style={{ animationDuration: '3s' }}>
-          <img src="/android-chrome-192x192.png" alt="MotoCare Logo" className="w-16 h-16 rounded-[18px] object-cover" style={{ boxShadow: '0 0 24px rgba(59, 130, 246, 0.5)' }} />
+        <div className="flex flex-col items-center space-y-4">
+          <img src="/android-chrome-192x192.png" alt="MotoCare Logo" className="w-16 h-16 rounded-[18px] object-cover" style={{ boxShadow: '0 0 24px rgba(59, 130, 246, 0.5)', animation: 'pulse 3s ease-in-out infinite' }} />
           <h1 className="text-2xl font-black tracking-tight text-white mt-2">MotoCare</h1>
-          <div className="flex flex-col items-center pt-8">
+          <div className="flex flex-col items-center pt-6 gap-3">
             <div className="w-8 h-8 border-4 border-t-iosBlue border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-            <p className="mt-3 text-iosGray text-xs tracking-wider uppercase font-extrabold">Memuat MotoCare...</p>
+            <p className="text-iosGray text-xs tracking-wider uppercase font-extrabold">Menghubungkan ke server...</p>
           </div>
+          {showLoadingBypass && (
+            <div className="flex flex-col items-center gap-3 mt-6 animate-fadeIn">
+              <p className="text-iosGray text-[11px] text-center max-w-[240px]">Server butuh waktu lebih lama dari biasanya.<br/>Kamu bisa lanjut tanpa login dulu.</p>
+              <button
+                onClick={() => {
+                  setUser(null);
+                  setGuestMode(true);
+                  localStorage.setItem('motocare_guest', 'true');
+                  setLoadingAuth(false);
+                }}
+                className="bg-iosBlue/20 border border-iosBlue/40 text-iosBlue text-xs font-bold px-6 py-3 rounded-full active:scale-95 transition-transform"
+              >
+                Gunakan Mode Tamu →
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -7826,6 +7880,7 @@ function App() {
     <div className="w-full min-h-screen flex flex-col md:flex-row text-white font-sans md:h-screen md:overflow-hidden bg-transparent">
       {renderMobileProfileModal()}
       {renderCropModal()}
+      {renderMobileVehicleDropdown()}
       {renderDesktopSidebar()}
 
       <div className="flex-1 flex flex-col min-w-0 md:overflow-hidden relative">
