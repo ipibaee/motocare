@@ -568,7 +568,7 @@
         <div id="loading-fallback-ui" style="display:none;" class="flex flex-col items-center gap-3 mt-4">
           <p class="text-gray-400 text-xs text-center" style="max-width:260px">Aplikasi gagal memuat.<br>Kemungkinan: koneksi internet, adblocker, atau CDN lambat.</p>
           <button onclick="window.location.reload()" style="background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.5);color:#60a5fa;font-size:12px;font-weight:700;padding:12px 24px;border-radius:999px;cursor:pointer;">
-            🔄 Muat Ulang
+            ðŸ”„ Muat Ulang
           </button>
           <p id="cdn-error-detail" style="font-size:10px;color:#6b7280;text-align:center;max-width:280px;margin-top:4px;"></p>
         </div>
@@ -590,7 +590,7 @@
           return; // React is alive, do nothing
         }
         if (Date.now() - startTime > 10000) {
-          // 10 seconds passed, React never mounted — show error UI
+          // 10 seconds passed, React never mounted â€” show error UI
           var fallback = document.getElementById('loading-fallback-ui');
           var errDetail = document.getElementById('cdn-error-detail');
           if (fallback) fallback.style.display = 'flex';
@@ -2077,7 +2077,7 @@ function App() {
     const checkSession = async () => {
       if (window.supabaseClient) {
         try {
-          // 8 seconds timeout — Supabase cold start after resume can take 5-8s
+          // 8 seconds timeout â€” Supabase cold start after resume can take 5-8s
           const sessionPromise = window.supabaseClient.auth.getSession();
           const timeoutPromise = new Promise(resolve => setTimeout(() => resolve('timeout'), 8000));
           
@@ -2119,7 +2119,7 @@ function App() {
           window.supabaseOfflineFallbackActive = true;
         }
       } else {
-        // Supabase not configured — immediate guest mode
+        // Supabase not configured â€” immediate guest mode
         setUser(null);
         setGuestMode(true);
         localStorage.setItem('motocare_guest', 'true');
@@ -4086,7 +4086,7 @@ function App() {
             <div className="space-y-1.5 text-xs text-iosGray leading-relaxed">
               <p><strong className="text-white">MotoCare v1.1.0 (Pro Gratis)</strong></p>
               <p>Aplikasi monitoring suku cadang, odometer, dan log perawatan motor premium. Dilengkapi proteksi offline fallback, sinkronisasi Supabase cloud, dan layout liquid glass adaptif.</p>
-              <p className="text-[10px] text-white/30 pt-2">Â© 2026 MotoCare Team. All rights reserved.</p>
+              <p className="text-[10px] text-white/30 pt-2">Ã‚Â© 2026 MotoCare Team. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -5283,7 +5283,7 @@ function App() {
           className="fixed inset-0 z-[90] md:hidden" 
           onClick={() => setShowVehicleDropdown(false)} 
         />
-        {/* Dropdown menu — fixed position so it escapes all overflow:hidden parents */}
+        {/* Dropdown menu â€” fixed position so it escapes all overflow:hidden parents */}
         <div className="fixed top-[74px] left-4 z-[91] md:hidden bg-[#1C1C1E] border border-white/[0.12] rounded-[18px] shadow-2xl p-2 w-[260px] animate-popover">
           {vehicles.map(v => (
             <button
@@ -7948,7 +7948,7 @@ function App() {
                 }}
                 className="bg-iosBlue/20 border border-iosBlue/40 text-iosBlue text-xs font-bold px-6 py-3 rounded-full active:scale-95 transition-transform"
               >
-                Gunakan Mode Tamu →
+                Gunakan Mode Tamu
               </button>
             </div>
           )}
