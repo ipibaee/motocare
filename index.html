@@ -1468,23 +1468,39 @@
   </script>
   <!-- Global JS error handler - captures Babel compilation errors and displays them -->
   <script>
-    window.onerror = function(msg, src, line, col, err) {
-      // Show the fallback UI with the actual error message
-      var fallback = document.getElementById('loading-fallback-ui');
-      var errDetail = document.getElementById('cdn-error-detail');
-      var loadingText = document.getElementById('loading-status-text');
-      if (fallback) { fallback.style.display = 'flex'; fallback.style.flexDirection = 'column'; }
-      if (loadingText) loadingText.textContent = 'ERROR';
-      if (errDetail) {
-        errDetail.textContent = 'Error: ' + msg + (line ? ' (baris ' + line + ')' : '');
-      }
-      console.error('[MotoCare] Uncaught error:', msg, 'at line', line, err);
-    };
-    window.onunhandledrejection = function(e) {
-      var errDetail = document.getElementById('cdn-error-detail');
-      if (errDetail) errDetail.textContent = 'Promise error: ' + (e.reason || e);
-      console.error('[MotoCare] Unhandled rejection:', e.reason);
-    };
+    // Override console.error to capture Babel's internal JSX parse errors
+    (function() {
+      var _origError = console.error;
+      console.error = function() {
+        var args = Array.prototype.slice.call(arguments);
+        var msg = args.map(function(a) { return typeof a === 'string' ? a : (a && a.message ? a.message : String(a)); }).join(' ');
+        // Show in fallback UI if it's a real error (not our own logging)
+        if (msg.indexOf('[MotoCare]') === -1) {
+          var errDetail = document.getElementById('cdn-error-detail');
+          var fallback = document.getElementById('loading-fallback-ui');
+          var loadingText = document.getElementById('loading-status-text');
+          if (errDetail && !errDetail.textContent) {
+            errDetail.textContent = msg.substring(0, 300);
+          }
+          if (fallback) { fallback.style.display = 'flex'; fallback.style.flexDirection = 'column'; }
+          if (loadingText && loadingText.textContent !== 'ERROR') loadingText.textContent = 'ERROR';
+        }
+        _origError.apply(console, args);
+      };
+      window.onerror = function(msg, src, line, col, err) {
+        var fallback = document.getElementById('loading-fallback-ui');
+        var errDetail = document.getElementById('cdn-error-detail');
+        var loadingText = document.getElementById('loading-status-text');
+        if (fallback) { fallback.style.display = 'flex'; fallback.style.flexDirection = 'column'; }
+        if (loadingText) loadingText.textContent = 'ERROR';
+        if (errDetail) errDetail.textContent = 'JS Error: ' + msg + (line ? ' (baris ' + line + ')' : '');
+        console.error('[MotoCare] Uncaught error:', msg, 'at line', line, err);
+      };
+      window.onunhandledrejection = function(e) {
+        var errDetail = document.getElementById('cdn-error-detail');
+        if (errDetail && !errDetail.textContent) errDetail.textContent = 'Promise error: ' + (e.reason || e);
+      };
+    })();
   </script>
 
   <!-- React Code using Babel Standalone -->
