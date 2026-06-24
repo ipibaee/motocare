@@ -73,9 +73,6 @@
   <!-- Lucide Icons Vanilla CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
   
-  <!-- Supabase JS Client CDN -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  
   <!-- Leaflet CSS & JS for OpenStreetMap -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -551,6 +548,9 @@
       }
     }
   </style>
+
+
+<!-- MotoCare API Backend Active - Neon PostgreSQL -->
 </head>
 <body class="text-white min-h-screen">
 
@@ -601,7 +601,6 @@
           if (!window.ReactDOM) missing.push('ReactDOM');
           if (!window.Babel) missing.push('Babel');
           if (!window.lucide) missing.push('Lucide Icons');
-          if (!window.supabase) missing.push('Supabase');
           if (errDetail && missing.length > 0) {
             errDetail.textContent = 'Library gagal dimuat: ' + missing.join(', ') + '. Coba matikan adblocker atau periksa koneksi internet.';
           } else if (errDetail) {
@@ -617,60 +616,15 @@
     })();
   </script>
 
-  <!-- MotoCare Supabase Configurations (Inlined for maximum reliability) -->
-  <script>
-    (function() {
-      let supabase = null;
-      let errorMsg = null;
-      try {
-        const getSupabaseKeys = () => {
-          const url = (typeof window !== 'undefined' && window.VITE_SUPABASE_URL) || '';
-          const key = (typeof window !== 'undefined' && window.VITE_SUPABASE_ANON_KEY) || '';
-          return { url: url.trim(), key: key.trim() };
-        };
-
-        const { url, key } = getSupabaseKeys();
-
-        if (typeof window !== 'undefined') {
-          try {
-            localStorage.removeItem('motocare_supabase_url');
-            localStorage.removeItem('motocare_supabase_anon_key');
-          } catch (e) {}
-
-          if (!window.supabase) {
-            errorMsg = 'Library Supabase gagal dimuat dari CDN (unpkg.com). Periksa koneksi internet atau matikan adblocker.';
-          } else if (!url || !key) {
-            errorMsg = 'URL atau Anon Key Supabase kosong. Harap isi Environment Variables VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY di dashboard Vercel, lalu redeploy.';
-          } else {
-            try {
-              supabase = window.supabase.createClient(url, key, {
-                auth: {
-                  persistSession: true,
-                  autoRefreshToken: true
-                }
-              });
-              console.log("Supabase client initialized successfully!");
-            } catch (err) {
-              errorMsg = 'Gagal inisialisasi Supabase: ' + (err.message || err);
-            }
-          }
-        }
-      } catch (globalErr) {
-        errorMsg = 'Gagal memproses skrip client: ' + (globalErr.message || globalErr);
-      }
-      window.supabaseClient = supabase;
-      window.supabaseError = errorMsg;
-    })();
-  </script>
-
+  <!-- MotoCare Database Service Layer (REST API + localStorage fallback) -->
   <script>
     (function() {
       let isSupabaseOffline = false;
-      const isSupabaseConfigured = () => {
-        return window.supabaseClient !== null && !isSupabaseOffline;
+      const isSupabaseConfigured = (userId) => {
+        return !!userId && !isSupabaseOffline;
       };
 
-      const withTimeout = async (promise, timeoutMs = 2000) => {
+      const withTimeout = async (promise, timeoutMs = 4000) => {
         return Promise.race([
           promise,
           new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeoutMs))
@@ -702,31 +656,26 @@
       const databaseService = {
         // --- VEHICLES ---
         async getVehicles(userId) {
-          if (isSupabaseConfigured() && userId) {
+          if (isSupabaseConfigured(userId)) {
             try {
-              const res = await withTimeout(
-                window.supabaseClient
-                  .from('vehicles')
-                  .select('*')
-                  .order('created_at', { ascending: true }),
-                2000
-              );
-              if (res && !res.error) {
-                return res.data.map(v => ({
+              const res = await withTimeout(fetch('/api/vehicles'));
+              if (res && res.ok) {
+                const data = await res.json();
+                return data.map(v => ({
                   id: v.id,
                   name: v.name,
                   brand: v.brand || '',
-                  type: v.type || '',
+                  type: v.model || v.type || '',
                   year: v.year || '',
                   plate: v.plate_number || '',
                   odo: v.current_odometer || 0,
                   initialOdo: v.current_odometer || 0,
-                  notes: v.notes || ''
+                  notes: ''
                 }));
               }
-              console.error("Supabase getVehicles error:", res.error);
+              console.error("API getVehicles error:", res.statusText);
             } catch (err) {
-              console.error("Supabase getVehicles failed, falling back:", err);
+              console.error("API getVehicles failed, falling back:", err);
               isSupabaseOffline = true;
               if (window.showOfflineToast) window.showOfflineToast();
             }
@@ -736,31 +685,29 @@
         },
 
         async createVehicle(userId, vehicle) {
-          if (isSupabaseConfigured() && userId) {
+          if (isSupabaseConfigured(userId)) {
             const dbVehicle = {
               name: vehicle.name,
               brand: vehicle.brand || '',
-              type: vehicle.type || '',
-              year: parseInt(vehicle.year, 10) || null,
+              model: vehicle.type || '',
               plate_number: vehicle.plate || '',
+              year: parseInt(vehicle.year, 10) || null,
               current_odometer: parseInt(vehicle.odo, 10) || 0,
-              user_id: userId
+              is_active: true
             };
             try {
-              const res = await withTimeout(
-                window.supabaseClient
-                  .from('vehicles')
-                  .insert([dbVehicle])
-                  .select(),
-                2000
-              );
-              if (res && !res.error && res.data && res.data.length > 0) {
-                const v = res.data[0];
+              const res = await withTimeout(fetch('/api/vehicles', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dbVehicle)
+              }));
+              if (res && res.ok) {
+                const v = await res.json();
                 return {
                   id: v.id,
                   name: v.name,
                   brand: v.brand || '',
-                  type: v.type || '',
+                  type: v.model || v.type || '',
                   year: v.year || '',
                   plate: v.plate_number || '',
                   odo: v.current_odometer || 0,
@@ -768,9 +715,9 @@
                   notes: ''
                 };
               }
-              console.error("Supabase createVehicle error:", res.error);
+              console.error("API createVehicle error:", res.statusText);
             } catch (err) {
-              console.error("Supabase createVehicle failed:", err);
+              console.error("API createVehicle failed:", err);
               isSupabaseOffline = true;
               if (window.showOfflineToast) window.showOfflineToast();
             }
@@ -785,31 +732,29 @@
         },
 
         async updateVehicle(userId, vehicle) {
-          if (isSupabaseConfigured() && userId && !vehicle.id.startsWith('v_')) {
+          if (isSupabaseConfigured(userId)) {
             const dbVehicle = {
               name: vehicle.name,
               brand: vehicle.brand || '',
-              type: vehicle.type || '',
-              year: parseInt(vehicle.year, 10) || null,
+              model: vehicle.type || '',
               plate_number: vehicle.plate || '',
-              current_odometer: parseInt(vehicle.odo, 10) || 0
+              year: parseInt(vehicle.year, 10) || null,
+              current_odometer: parseInt(vehicle.odo, 10) || 0,
+              is_active: true
             };
             try {
-              const res = await withTimeout(
-                window.supabaseClient
-                  .from('vehicles')
-                  .update(dbVehicle)
-                  .eq('id', vehicle.id)
-                  .select(),
-                2000
-              );
-              if (res && !res.error && res.data && res.data.length > 0) {
-                const v = res.data[0];
+              const res = await withTimeout(fetch(`/api/vehicles/${vehicle.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dbVehicle)
+              }));
+              if (res && res.ok) {
+                const v = await res.json();
                 return {
                   id: v.id,
                   name: v.name,
                   brand: v.brand || '',
-                  type: v.type || '',
+                  type: v.model || v.type || '',
                   year: v.year || '',
                   plate: v.plate_number || '',
                   odo: v.current_odometer || 0,
@@ -817,9 +762,9 @@
                   notes: ''
                 };
               }
-              console.error("Supabase updateVehicle error:", res.error);
+              console.error("API updateVehicle error:", res.statusText);
             } catch (err) {
-              console.error("Supabase updateVehicle failed:", err);
+              console.error("API updateVehicle failed:", err);
               isSupabaseOffline = true;
               if (window.showOfflineToast) window.showOfflineToast();
             }
@@ -834,108 +779,92 @@
         },
 
         async deleteVehicle(userId, vehicleId) {
-          if (isSupabaseConfigured() && userId && !vehicleId.startsWith('v_')) {
+          if (isSupabaseConfigured(userId) && !String(vehicleId).startsWith('v_')) {
             try {
-              const res = await withTimeout(
-                window.supabaseClient
-                  .from('vehicles')
-                  .delete()
-                  .eq('id', vehicleId),
-                2000
-              );
-              if (res && res.error) {
-                console.error("Supabase deleteVehicle error:", res.error);
+              const res = await withTimeout(fetch(`/api/vehicles/${vehicleId}`, {
+                method: 'DELETE'
+              }));
+              if (res && res.ok) {
+                return true;
               }
+              console.error("API deleteVehicle error:", res.statusText);
             } catch (err) {
-              console.error("Supabase deleteVehicle failed:", err);
+              console.error("API deleteVehicle failed:", err);
               isSupabaseOffline = true;
               if (window.showOfflineToast) window.showOfflineToast();
             }
           }
           const guestData = getGuestData();
           guestData.vehicles = guestData.vehicles.filter(v => v.id !== vehicleId);
-          if (guestData.components[vehicleId]) {
-            delete guestData.components[vehicleId];
-          }
-          guestData.service_logs = guestData.service_logs.filter(l => l.vehicleId !== vehicleId);
-          guestData.trips = guestData.trips.filter(t => t.vehicleId !== vehicleId);
           saveGuestData(guestData);
         },
 
         // --- COMPONENTS ---
         async getComponents(userId, vehicleId) {
-          if (isSupabaseConfigured() && userId && vehicleId && !vehicleId.startsWith('v_')) {
+          if (isSupabaseConfigured(userId) && !String(vehicleId).startsWith('v_')) {
             try {
-              const res = await withTimeout(
-                window.supabaseClient
-                  .from('components')
-                  .select('*')
-                  .eq('vehicle_id', vehicleId),
-                2000
-              );
-              if (res && !res.error) {
-                return res.data.map(c => ({
+              const res = await withTimeout(fetch(`/api/components?vehicle_id=${vehicleId}`));
+              if (res && res.ok) {
+                const data = await res.json();
+                return data.map(c => ({
                   id: c.id,
                   name: c.name,
                   icon: c.icon || 'Wrench',
                   intervalKm: c.interval_km,
-                  intervalMonths: c.interval_month,
-                  lastServiceOdo: c.last_service_odometer,
-                  lastServiceDate: c.last_service_date,
-                  warning: c.notes || 'Perlu servis berkala.',
-                  advice: c.notes || 'Cek kondisi secara rutin.'
+                  intervalMonths: c.interval_days || 6,
+                  lastServiceOdo: c.last_service_odometer || 0,
+                  lastServiceDate: c.last_service_date ? c.last_service_date.split('T')[0] : '',
+                  warning: 'Perlu servis berkala.',
+                  advice: 'Cek kondisi secara rutin.'
                 }));
               }
-              console.error("Supabase getComponents error:", res.error);
+              console.error("API getComponents error:", res.statusText);
             } catch (err) {
-              console.error("Supabase getComponents failed:", err);
+              console.error("API getComponents failed:", err);
               isSupabaseOffline = true;
               if (window.showOfflineToast) window.showOfflineToast();
             }
           }
           const guestData = getGuestData();
-          return guestData.components[vehicleId] || [];
+          const allComps = guestData.components || {};
+          return allComps[vehicleId] || [];
         },
 
         async createComponent(userId, vehicleId, component) {
-          if (isSupabaseConfigured() && userId && vehicleId && !vehicleId.startsWith('v_')) {
+          if (isSupabaseConfigured(userId) && !String(vehicleId).startsWith('v_')) {
             const dbComp = {
-              vehicle_id: vehicleId,
-              user_id: userId,
+              vehicle_id: parseInt(vehicleId),
               name: component.name,
               icon: component.icon || 'Wrench',
-              interval_km: parseInt(component.intervalKm, 10) || 5000,
-              interval_month: parseInt(component.intervalMonths || component.interval_month, 10) || 6,
-              last_service_date: component.lastServiceDate || '2026-01-01',
-              last_service_odometer: parseInt(component.lastServiceOdo || component.last_service_odometer || 0, 10),
-              is_urgent: component.isUrgent || false,
-              notes: component.advice || component.notes || ''
+              interval_km: parseInt(component.intervalKm, 10),
+              interval_days: parseInt(component.intervalMonths, 10),
+              last_service_odometer: parseInt(component.lastServiceOdo, 10) || 0,
+              last_service_date: component.lastServiceDate || null,
+              is_custom: !!component.is_custom
             };
             try {
-              const res = await withTimeout(
-                window.supabaseClient
-                  .from('components')
-                  .insert([dbComp])
-                  .select(),
-                2000
-              );
-              if (res && !res.error && res.data && res.data.length > 0) {
-                const c = res.data[0];
+              const res = await withTimeout(fetch('/api/components', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dbComp)
+              }));
+              if (res && res.ok) {
+                const c = await res.json();
                 return {
                   id: c.id,
                   name: c.name,
                   icon: c.icon || 'Wrench',
                   intervalKm: c.interval_km,
-                  intervalMonths: c.interval_month,
-                  lastServiceOdo: c.last_service_odometer,
-                  lastServiceDate: c.last_service_date,
-                  warning: c.notes || '',
-                  advice: c.notes || ''
+                  intervalMonths: c.interval_days || 6,
+                  lastServiceOdo: c.last_service_odometer || 0,
+                  lastServiceDate: c.last_service_date ? c.last_service_date.split('T')[0] : '',
+                  warning: 'Perlu servis berkala.',
+                  advice: 'Cek kondisi secara rutin.'
                 };
               }
-              console.error("Supabase createComponent error:", res.error);
+              console.error("API createComponent error:", res.statusText);
             } catch (err) {
-              console.error("Supabase createComponent failed:", err);
+              console.error("API createComponent failed:", err);
               isSupabaseOffline = true;
               if (window.showOfflineToast) window.showOfflineToast();
             }
@@ -953,74 +882,65 @@
         },
 
         async updateComponent(userId, vehicleId, component) {
-          if (isSupabaseConfigured() && userId && vehicleId && !component.id.startsWith('c_')) {
+          if (isSupabaseConfigured(userId) && !String(component.id).startsWith('c_')) {
             const dbComp = {
               name: component.name,
               icon: component.icon || 'Wrench',
-              interval_km: parseInt(component.intervalKm, 10) || 5000,
-              interval_month: parseInt(component.intervalMonths || component.interval_month, 10) || 6,
-              last_service_date: component.lastServiceDate || '2026-01-01',
-              last_service_odometer: parseInt(component.lastServiceOdo || component.last_service_odometer || 0, 10),
-              is_urgent: component.isUrgent || false,
-              notes: component.advice || component.notes || ''
+              interval_km: parseInt(component.intervalKm, 10),
+              interval_days: parseInt(component.intervalMonths, 10),
+              last_service_odometer: parseInt(component.lastServiceOdo, 10) || 0,
+              last_service_date: component.lastServiceDate || null
             };
             try {
-              const res = await withTimeout(
-                window.supabaseClient
-                  .from('components')
-                  .update(dbComp)
-                  .eq('id', component.id)
-                  .select(),
-                2000
-              );
-              if (res && !res.error && res.data && res.data.length > 0) {
-                const c = res.data[0];
+              const res = await withTimeout(fetch(`/api/components/${component.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dbComp)
+              }));
+              if (res && res.ok) {
+                const c = await res.json();
                 return {
                   id: c.id,
                   name: c.name,
                   icon: c.icon || 'Wrench',
                   intervalKm: c.interval_km,
-                  intervalMonths: c.interval_month,
-                  lastServiceOdo: c.last_service_odometer,
-                  lastServiceDate: c.last_service_date,
-                  warning: c.notes || '',
-                  advice: c.notes || ''
+                  intervalMonths: c.interval_days || 6,
+                  lastServiceOdo: c.last_service_odometer || 0,
+                  lastServiceDate: c.last_service_date ? c.last_service_date.split('T')[0] : '',
+                  warning: 'Perlu servis berkala.',
+                  advice: 'Cek kondisi secara rutin.'
                 };
               }
-              console.error("Supabase updateComponent error:", res.error);
+              console.error("API updateComponent error:", res.statusText);
             } catch (err) {
-              console.error("Supabase updateComponent failed:", err);
+              console.error("API updateComponent failed:", err);
               isSupabaseOffline = true;
               if (window.showOfflineToast) window.showOfflineToast();
             }
           }
           const guestData = getGuestData();
-          if (!guestData.components[vehicleId]) {
-            guestData.components[vehicleId] = [];
-          }
-          const idx = guestData.components[vehicleId].findIndex(c => c.id === component.id);
-          if (idx > -1) {
-            guestData.components[vehicleId][idx] = component;
+          if (guestData.components[vehicleId]) {
+            const idx = guestData.components[vehicleId].findIndex(c => c.id === component.id);
+            if (idx > -1) {
+              guestData.components[vehicleId][idx] = component;
+            }
           }
           saveGuestData(guestData);
           return component;
         },
 
         async deleteComponent(userId, vehicleId, componentId) {
-          if (isSupabaseConfigured() && userId && !componentId.startsWith('c_')) {
+          if (isSupabaseConfigured(userId) && !String(componentId).startsWith('c_')) {
             try {
-              const res = await withTimeout(
-                window.supabaseClient
-                  .from('components')
-                  .delete()
-                  .eq('id', componentId),
-                2000
-              );
-              if (res && res.error) {
-                console.error("Supabase deleteComponent error:", res.error);
+              const res = await withTimeout(fetch(`/api/components/${componentId}`, {
+                method: 'DELETE'
+              }));
+              if (res && res.ok) {
+                return true;
               }
+              console.error("API deleteComponent error:", res.statusText);
             } catch (err) {
-              console.error("Supabase deleteComponent failed:", err);
+              console.error("API deleteComponent failed:", err);
               isSupabaseOffline = true;
               if (window.showOfflineToast) window.showOfflineToast();
             }
@@ -1033,81 +953,58 @@
         },
 
         // --- SERVICE LOGS ---
-        async getServiceLogs(userId, vehicleId) {
-          if (isSupabaseConfigured() && userId && vehicleId && !vehicleId.startsWith('v_')) {
+        async getServiceLogs(userId, vehicleId, page = 1, limit = 10) {
+          if (isSupabaseConfigured(userId) && !String(vehicleId).startsWith('v_')) {
             try {
-              const res = await withTimeout(
-                window.supabaseClient
-                  .from('service_logs')
-                  .select(`*, service_log_items (*)`)
-                  .eq('vehicle_id', vehicleId)
-                  .order('service_date', { ascending: false }),
-                2000
-              );
-              if (res && !res.error) {
-                return res.data.map(log => ({
-                  id: log.id,
-                  vehicleId: log.vehicle_id,
-                  date: log.service_date,
-                  odo: log.odometer,
-                  components: (log.service_log_items || []).map(item => item.component_name),
-                  notes: log.notes,
-                  cost: parseFloat(log.total_cost) || 0
-                }));
+              const res = await withTimeout(fetch(`/api/service-history?vehicle_id=${vehicleId}&page=${page}&limit=${limit}`));
+              if (res && res.ok) {
+                return await res.json(); // Returns { data, pagination }
               }
-              console.error("Supabase getServiceLogs error:", res.error);
+              console.error("API getServiceLogs error:", res.statusText);
             } catch (err) {
-              console.error("Supabase getServiceLogs failed:", err);
+              console.error("API getServiceLogs failed:", err);
               isSupabaseOffline = true;
               if (window.showOfflineToast) window.showOfflineToast();
             }
           }
           const guestData = getGuestData();
-          return (guestData.service_logs || []).filter(l => l.vehicleId === vehicleId);
+          const list = guestData.service_logs || [];
+          const filtered = list.filter(h => h.vehicleId === vehicleId);
+          const totalItems = filtered.length;
+          const totalPages = Math.ceil(totalItems / limit);
+          const data = filtered.slice((page - 1) * limit, page * limit);
+          return {
+            data,
+            pagination: {
+              currentPage: page,
+              totalPages,
+              totalItems
+            }
+          };
         },
 
         async createServiceLog(userId, vehicleId, log) {
-          if (isSupabaseConfigured() && userId && vehicleId && !vehicleId.startsWith('v_')) {
+          if (isSupabaseConfigured(userId) && !String(vehicleId).startsWith('v_')) {
             const dbLog = {
-              vehicle_id: vehicleId,
-              user_id: userId,
-              service_date: log.date,
-              odometer: parseInt(log.odo, 10),
-              total_cost: parseFloat(log.cost) || 0,
+              vehicle_id: parseInt(vehicleId),
+              date: log.date,
+              odo: parseInt(log.odo, 10),
+              cost: parseFloat(log.cost) || 0,
               notes: log.notes || '',
-              receipt_url: log.receipt_url || ''
+              components: log.components || []
             };
             try {
-              const res = await withTimeout(
-                window.supabaseClient
-                  .from('service_logs')
-                  .insert([dbLog])
-                  .select(),
-                2000
-              );
-              if (res && !res.error && res.data && res.data.length > 0) {
-                const savedLog = res.data[0];
-                if (log.components && log.components.length > 0) {
-                  const dbItems = log.components.map(compName => ({
-                    service_log_id: savedLog.id,
-                    component_name: compName,
-                    cost: 0
-                  }));
-                  await window.supabaseClient.from('service_log_items').insert(dbItems);
-                }
-                return {
-                  id: savedLog.id,
-                  vehicleId: savedLog.vehicle_id,
-                  date: savedLog.service_date,
-                  odo: savedLog.odometer,
-                  components: log.components,
-                  notes: savedLog.notes,
-                  cost: savedLog.total_cost
-                };
+              const res = await withTimeout(fetch('/api/service-history', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dbLog)
+              }));
+              if (res && res.ok) {
+                return await res.json();
               }
-              console.error("Supabase createServiceLog error:", res.error);
+              console.error("API createServiceLog error:", res.statusText);
             } catch (err) {
-              console.error("Supabase createServiceLog failed:", err);
+              console.error("API createServiceLog failed:", err);
               isSupabaseOffline = true;
               if (window.showOfflineToast) window.showOfflineToast();
             }
@@ -1122,47 +1019,26 @@
         },
 
         async updateServiceLog(userId, vehicleId, log) {
-          if (isSupabaseConfigured() && userId && vehicleId && !log.id.startsWith('h_')) {
+          if (isSupabaseConfigured(userId) && !String(log.id).startsWith('h_')) {
             const dbLog = {
-              service_date: log.date,
-              odometer: parseInt(log.odo, 10),
-              total_cost: parseFloat(log.cost) || 0,
+              date: log.date,
+              odo: parseInt(log.odo, 10),
+              cost: parseFloat(log.cost) || 0,
               notes: log.notes || '',
-              receipt_url: log.receipt_url || ''
+              components: log.components || []
             };
             try {
-              const res = await withTimeout(
-                window.supabaseClient
-                  .from('service_logs')
-                  .update(dbLog)
-                  .eq('id', log.id)
-                  .select(),
-                2000
-              );
-              if (res && !res.error && res.data && res.data.length > 0) {
-                const savedLog = res.data[0];
-                await window.supabaseClient.from('service_log_items').delete().eq('service_log_id', log.id);
-                if (log.components && log.components.length > 0) {
-                  const dbItems = log.components.map(compName => ({
-                    service_log_id: savedLog.id,
-                    component_name: compName,
-                    cost: 0
-                  }));
-                  await window.supabaseClient.from('service_log_items').insert(dbItems);
-                }
-                return {
-                  id: savedLog.id,
-                  vehicleId: savedLog.vehicle_id,
-                  date: savedLog.service_date,
-                  odo: savedLog.odometer,
-                  components: log.components,
-                  notes: savedLog.notes,
-                  cost: savedLog.total_cost
-                };
+              const res = await withTimeout(fetch(`/api/service-history/${log.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dbLog)
+              }));
+              if (res && res.ok) {
+                return await res.json();
               }
-              console.error("Supabase updateServiceLog error:", res.error);
+              console.error("API updateServiceLog error:", res.statusText);
             } catch (err) {
-              console.error("Supabase updateServiceLog failed:", err);
+              console.error("API updateServiceLog failed:", err);
               isSupabaseOffline = true;
               if (window.showOfflineToast) window.showOfflineToast();
             }
@@ -1177,20 +1053,17 @@
         },
 
         async deleteServiceLog(userId, vehicleId, logId) {
-          if (isSupabaseConfigured() && userId && !logId.startsWith('h_')) {
+          if (isSupabaseConfigured(userId) && !String(logId).startsWith('h_')) {
             try {
-              const res = await withTimeout(
-                window.supabaseClient
-                  .from('service_logs')
-                  .delete()
-                  .eq('id', logId),
-                2000
-              );
-              if (res && res.error) {
-                console.error("Supabase deleteServiceLog error:", res.error);
+              const res = await withTimeout(fetch(`/api/service-history/${logId}`, {
+                method: 'DELETE'
+              }));
+              if (res && res.ok) {
+                return true;
               }
+              console.error("API deleteServiceLog error:", res.statusText);
             } catch (err) {
-              console.error("Supabase deleteServiceLog failed:", err);
+              console.error("API deleteServiceLog failed:", err);
               isSupabaseOffline = true;
               if (window.showOfflineToast) window.showOfflineToast();
             }
@@ -1201,22 +1074,25 @@
         },
 
         // --- SHOPS ---
-        async getShops(userId) {
-          if (isSupabaseConfigured() && userId) {
+        async getShops(userId, page = 1, limit = 50, search = '') {
+          if (isSupabaseConfigured(userId)) {
             try {
-              const res = await withTimeout(
-                window.supabaseClient
-                  .from('shops')
-                  .select('*')
-                  .order('created_at', { ascending: false }),
-                2000
-              );
-              if (res && !res.error) {
-                return res.data;
+              const res = await withTimeout(fetch(`/api/workshops?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`));
+              if (res && res.ok) {
+                const result = await res.json();
+                return result.data.map(s => ({
+                  id: s.id,
+                  name: s.name,
+                  address: s.address || '',
+                  phone: s.phone || '',
+                  rating: parseFloat(s.rating) || 4.5,
+                  type: s.category || 'Umum',
+                  notes: s.notes || ''
+                }));
               }
-              console.error("Supabase getShops error:", res.error);
+              console.error("API getShops error:", res.statusText);
             } catch (err) {
-              console.error("Supabase getShops failed:", err);
+              console.error("API getShops failed:", err);
               isSupabaseOffline = true;
               if (window.showOfflineToast) window.showOfflineToast();
             }
@@ -1226,29 +1102,35 @@
         },
 
         async createShop(userId, shop) {
-          if (isSupabaseConfigured() && userId) {
+          if (isSupabaseConfigured(userId)) {
             const dbShop = {
-              user_id: userId,
               name: shop.name,
               address: shop.address || '',
               phone: shop.phone || '',
-              rating: parseFloat(shop.rating) || 4.5,
+              category: shop.type || 'Umum',
               notes: shop.notes || ''
             };
             try {
-              const res = await withTimeout(
-                window.supabaseClient
-                  .from('shops')
-                  .insert([dbShop])
-                  .select(),
-                2000
-              );
-              if (res && !res.error && res.data && res.data.length > 0) {
-                return res.data[0];
+              const res = await withTimeout(fetch('/api/workshops', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dbShop)
+              }));
+              if (res && res.ok) {
+                const s = await res.json();
+                return {
+                  id: s.id,
+                  name: s.name,
+                  address: s.address || '',
+                  phone: s.phone || '',
+                  rating: parseFloat(s.rating) || 4.5,
+                  type: s.category || 'Umum',
+                  notes: s.notes || ''
+                };
               }
-              console.error("Supabase createShop error:", res.error);
+              console.error("API createShop error:", res.statusText);
             } catch (err) {
-              console.error("Supabase createShop failed:", err);
+              console.error("API createShop failed:", err);
               isSupabaseOffline = true;
               if (window.showOfflineToast) window.showOfflineToast();
             }
@@ -1263,29 +1145,35 @@
         },
 
         async updateShop(userId, shop) {
-          if (isSupabaseConfigured() && userId && !shop.id.startsWith('s_') && !shop.id.startsWith('custom_')) {
+          if (isSupabaseConfigured(userId) && !String(shop.id).startsWith('s_') && !String(shop.id).startsWith('custom_')) {
             const dbShop = {
               name: shop.name,
               address: shop.address || '',
               phone: shop.phone || '',
-              rating: parseFloat(shop.rating) || 4.5,
+              category: shop.type || 'Umum',
               notes: shop.notes || ''
             };
             try {
-              const res = await withTimeout(
-                window.supabaseClient
-                  .from('shops')
-                  .update(dbShop)
-                  .eq('id', shop.id)
-                  .select(),
-                2000
-              );
-              if (res && !res.error && res.data && res.data.length > 0) {
-                return res.data[0];
+              const res = await withTimeout(fetch(`/api/workshops/${shop.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dbShop)
+              }));
+              if (res && res.ok) {
+                const s = await res.json();
+                return {
+                  id: s.id,
+                  name: s.name,
+                  address: s.address || '',
+                  phone: s.phone || '',
+                  rating: parseFloat(s.rating) || 4.5,
+                  type: s.category || 'Umum',
+                  notes: s.notes || ''
+                };
               }
-              console.error("Supabase updateShop error:", res.error);
+              console.error("API updateShop error:", res.statusText);
             } catch (err) {
-              console.error("Supabase updateShop failed:", err);
+              console.error("API updateShop failed:", err);
               isSupabaseOffline = true;
               if (window.showOfflineToast) window.showOfflineToast();
             }
@@ -1300,20 +1188,17 @@
         },
 
         async deleteShop(userId, shopId) {
-          if (isSupabaseConfigured() && userId && !shopId.startsWith('s_') && !shopId.startsWith('custom_')) {
+          if (isSupabaseConfigured(userId) && !String(shopId).startsWith('s_') && !String(shopId).startsWith('custom_')) {
             try {
-              const res = await withTimeout(
-                window.supabaseClient
-                  .from('shops')
-                  .delete()
-                  .eq('id', shopId),
-                2000
-              );
-              if (res && res.error) {
-                console.error("Supabase deleteShop error:", res.error);
+              const res = await withTimeout(fetch(`/api/workshops/${shopId}`, {
+                method: 'DELETE'
+              }));
+              if (res && res.ok) {
+                return true;
               }
+              console.error("API deleteShop error:", res.statusText);
             } catch (err) {
-              console.error("Supabase deleteShop failed:", err);
+              console.error("API deleteShop failed:", err);
               isSupabaseOffline = true;
               if (window.showOfflineToast) window.showOfflineToast();
             }
@@ -1357,9 +1242,9 @@
 
         // --- DATA MIGRATION ---
         async migrateLocalDataToSupabase(userId) {
-          if (!isSupabaseConfigured() || !userId) return false;
+          if (!isSupabaseConfigured(userId)) return false;
           try {
-            console.log('Migrating local storage data to Supabase...');
+            console.log('Migrating local storage data to API...');
             const guestData = getGuestData();
             const localVehicles = guestData.vehicles || [];
             const localComps = guestData.components || {};
@@ -1367,9 +1252,10 @@
             const localShops = guestData.shops || [];
 
             for (const v of localVehicles) {
-              const originalId = v.id;
-              const checkVehicles = await window.supabaseClient.from('vehicles').select('id').eq('user_id', userId).eq('name', v.name);
-              if (checkVehicles.data && checkVehicles.data.length > 0) {
+              const resVehs = await fetch('/api/vehicles');
+              let existingVehicles = [];
+              if (resVehs.ok) existingVehicles = await resVehs.json();
+              if (existingVehicles.some(ev => ev.name.toLowerCase() === v.name.toLowerCase())) {
                 console.log(`Vehicle ${v.name} already migrated, skipping.`);
                 continue;
               }
@@ -1377,79 +1263,74 @@
               const dbVehicle = {
                 name: v.name,
                 brand: v.brand || '',
-                type: v.type || '',
-                year: parseInt(v.year, 10) || 2022,
+                model: v.type || '',
                 plate_number: v.plate || v.plate_number || '',
+                year: parseInt(v.year, 10) || null,
                 current_odometer: parseInt(v.odo, 10) || 0,
-                user_id: userId
+                is_active: true
               };
 
-              const { data: vData, error: vErr } = await window.supabaseClient
-                .from('vehicles')
-                .insert([dbVehicle])
-                .select();
+              const res = await fetch('/api/vehicles', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dbVehicle)
+              });
 
-              if (!vErr && vData && vData.length > 0) {
-                const newVehicleId = vData[0].id;
-                const comps = localComps[originalId] || [];
+              if (res.ok) {
+                const newV = await res.json();
+                const newVehicleId = newV.id;
+
+                const comps = localComps[v.id] || [];
                 for (const c of comps) {
                   const dbComp = {
-                    user_id: userId,
                     vehicle_id: newVehicleId,
                     name: c.name,
                     icon: c.icon || 'Wrench',
                     interval_km: parseInt(c.intervalKm, 10) || 5000,
-                    interval_month: parseInt(c.intervalMonths || c.interval_month, 10) || 6,
-                    last_service_date: c.lastServiceDate || '2026-01-01',
+                    interval_days: parseInt(c.intervalMonths || c.interval_month, 10) || 6,
                     last_service_odometer: parseInt(c.lastServiceOdo, 10) || 0,
-                    is_urgent: c.isUrgent || false,
-                    notes: c.advice || c.notes || ''
+                    last_service_date: c.lastServiceDate || '2026-01-01',
+                    is_custom: !!c.is_custom
                   };
-                  await window.supabaseClient.from('components').insert([dbComp]);
+                  await fetch('/api/components', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dbComp)
+                  });
                 }
 
-                const vehicleLogs = localHistory.filter(h => h.vehicleId === originalId);
+                const vehicleLogs = localHistory.filter(h => h.vehicleId === v.id);
                 for (const h of vehicleLogs) {
                   const dbLog = {
-                    user_id: userId,
                     vehicle_id: newVehicleId,
-                    service_date: h.date || '2026-01-01',
-                    odometer: parseInt(h.odo, 10) || 0,
-                    total_cost: parseFloat(h.cost) || 0,
-                    notes: h.notes || ''
+                    date: h.date || '2026-01-01',
+                    odo: parseInt(h.odo, 10) || 0,
+                    cost: parseFloat(h.cost) || 0,
+                    notes: h.notes || '',
+                    components: h.components || []
                   };
-                  const { data: logData, error: logErr } = await window.supabaseClient
-                    .from('service_logs')
-                    .insert([dbLog])
-                    .select();
-                  if (!logErr && logData && logData.length > 0) {
-                    const newLogId = logData[0].id;
-                    if (h.components && h.components.length > 0) {
-                      const dbItems = h.components.map(cName => ({
-                        service_log_id: newLogId,
-                        component_name: cName,
-                        cost: 0
-                      }));
-                      await window.supabaseClient.from('service_log_items').insert(dbItems);
-                    }
-                  }
+                  await fetch('/api/service-history', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dbLog)
+                  });
                 }
               }
             }
 
             for (const s of localShops) {
-              const checkShops = await window.supabaseClient.from('shops').select('id').eq('user_id', userId).eq('name', s.name);
-              if (checkShops.data && checkShops.data.length > 0) continue;
-
               const dbShop = {
-                user_id: userId,
                 name: s.name,
                 address: s.address || '',
                 phone: s.phone || '',
-                rating: parseFloat(s.rating) || 4.5,
+                category: s.type || 'Umum',
                 notes: s.notes || ''
               };
-              await window.supabaseClient.from('shops').insert([dbShop]);
+              await fetch('/api/workshops', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dbShop)
+              });
             }
 
             console.log('Migration completed successfully!');
@@ -1466,44 +1347,48 @@
       window.supabaseService = databaseService;
     })();
   </script>
-  <!-- Global JS error handler - captures Babel compilation errors and displays them -->
+  <!-- Global JS error handler: critical pre-React errors only -->
   <script>
-    // Override console.error to capture Babel's internal JSX parse errors
     (function() {
       var _origError = console.error;
+      window.__reactMounted = false;
       console.error = function() {
         var args = Array.prototype.slice.call(arguments);
         var msg = args.map(function(a) { return typeof a === 'string' ? a : (a && a.message ? a.message : String(a)); }).join(' ');
-        // Show in fallback UI if it's a real error (not our own logging)
-        if (msg.indexOf('[MotoCare]') === -1) {
-          var errDetail = document.getElementById('cdn-error-detail');
-          var fallback = document.getElementById('loading-fallback-ui');
-          var loadingText = document.getElementById('loading-status-text');
-          if (errDetail && !errDetail.textContent) {
-            errDetail.textContent = msg.substring(0, 300);
+        if (!window.__reactMounted && msg.indexOf('[MotoCare]') === -1) {
+          var isCritical = msg.indexOf('SyntaxError') !== -1 || msg.indexOf('Cannot use import') !== -1 || msg.indexOf('appendChild') !== -1;
+          if (isCritical) {
+            var errDetail = document.getElementById('cdn-error-detail');
+            var fallback = document.getElementById('loading-fallback-ui');
+            var loadingText = document.getElementById('loading-status-text');
+            if (errDetail && !errDetail.textContent) { errDetail.textContent = msg.substring(0, 300); }
+            if (fallback) { fallback.style.display = 'flex'; fallback.style.flexDirection = 'column'; }
+            if (loadingText && loadingText.textContent !== 'ERROR') loadingText.textContent = 'ERROR';
           }
-          if (fallback) { fallback.style.display = 'flex'; fallback.style.flexDirection = 'column'; }
-          if (loadingText && loadingText.textContent !== 'ERROR') loadingText.textContent = 'ERROR';
         }
         _origError.apply(console, args);
       };
       window.onerror = function(msg, src, line, col, err) {
-        var fallback = document.getElementById('loading-fallback-ui');
-        var errDetail = document.getElementById('cdn-error-detail');
-        var loadingText = document.getElementById('loading-status-text');
-        if (fallback) { fallback.style.display = 'flex'; fallback.style.flexDirection = 'column'; }
-        if (loadingText) loadingText.textContent = 'ERROR';
-        if (errDetail) errDetail.textContent = 'JS Error: ' + msg + (line ? ' (baris ' + line + ')' : '');
-        console.error('[MotoCare] Uncaught error:', msg, 'at line', line, err);
+        if (!window.__reactMounted) {
+          var fallback = document.getElementById('loading-fallback-ui');
+          var errDetail = document.getElementById('cdn-error-detail');
+          var loadingText = document.getElementById('loading-status-text');
+          if (fallback) { fallback.style.display = 'flex'; fallback.style.flexDirection = 'column'; }
+          if (loadingText) loadingText.textContent = 'ERROR';
+          if (errDetail) errDetail.textContent = 'JS Error: ' + msg + (line ? ' (baris ' + line + ')' : '');
+        }
+        _origError.call(console, '[MotoCare] Uncaught error:', msg, 'at line', line, err);
       };
       window.onunhandledrejection = function(e) {
-        var errDetail = document.getElementById('cdn-error-detail');
-        if (errDetail && !errDetail.textContent) errDetail.textContent = 'Promise error: ' + (e.reason || e);
+        if (!window.__reactMounted) {
+          var errDetail = document.getElementById('cdn-error-detail');
+          if (errDetail && !errDetail.textContent) errDetail.textContent = 'Promise error: ' + (e.reason || e);
+        }
       };
     })();
   </script>
 
-  <!-- React Code using Babel Standalone -->
+    <!-- React Code using Babel Standalone -->
   <script type="text/babel">
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -1937,9 +1822,41 @@ function App() {
 
   // Search/Filters
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = React.useState('');
   const [shopSearch, setShopSearch] = React.useState('');
+  const [debouncedShopSearch, setDebouncedShopSearch] = React.useState('');
   const [selectedShopFilter, setSelectedShopFilter] = React.useState('Semua');
   const [selectedShopDetail, setSelectedShopDetail] = React.useState(null);
+
+  // Pagination states
+  const [historyPage, setHistoryPage] = React.useState(1);
+  const [historyTotalPages, setHistoryTotalPages] = React.useState(1);
+  const [historyTotalItems, setHistoryTotalItems] = React.useState(0);
+  const [shopPage, setShopPage] = React.useState(1);
+  const [shopTotalPages, setShopTotalPages] = React.useState(1);
+  const [shopTotalItems, setShopTotalItems] = React.useState(0);
+
+  // Cache state for cost summary chart
+  const [costSummary, setCostSummary] = React.useState([]);
+
+  const loadedVehicleId = React.useRef(null);
+  const loadedShopSearch = React.useRef('');
+
+  // Debouncing effects
+  React.useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
+
+  React.useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedShopSearch(shopSearch);
+      setShopPage(1); // Reset to page 1 on new search
+    }, 300);
+    return () => clearTimeout(t);
+  }, [shopSearch]);
 
   const [showVehicleDropdown, setShowVehicleDropdown] = React.useState(false);
   const [showNotificationPopover, setShowNotificationPopover] = React.useState(false);
@@ -2071,66 +1988,38 @@ function App() {
     return () => clearTimeout(failsafeTimer);
   }, [loadingAuth]);
 
-  // Auth/Session check effect with 8s timeout (to handle Supabase cold start after resume/pause)
+  // Auth/Session check effect mapping to our Node Express /api/me endpoint
   React.useEffect(() => {
-    let subscription = null;
     const checkSession = async () => {
-      if (window.supabaseClient) {
-        try {
-          // 8 seconds timeout â€” Supabase cold start after resume can take 5-8s
-          const sessionPromise = window.supabaseClient.auth.getSession();
-          const timeoutPromise = new Promise(resolve => setTimeout(() => resolve('timeout'), 8000));
-          
-          const result = await Promise.race([sessionPromise, timeoutPromise]);
-          if (result === 'timeout') {
-            console.warn('Supabase auth check timed out (8s). Booting Guest Mode.');
+      try {
+        const res = await fetch('/api/me');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user) {
+            setUser(data.user);
+            setGuestMode(false);
+            localStorage.setItem('motocare_guest', 'false');
+          } else {
             setUser(null);
             setGuestMode(true);
             localStorage.setItem('motocare_guest', 'true');
-            window.supabaseOfflineFallbackActive = true;
-          } else {
-            const session = result?.data?.session || null;
-            setUser(session?.user || null);
-            if (session?.user) {
-              setGuestMode(false);
-              localStorage.setItem('motocare_guest', 'false');
-            } else {
-              setGuestMode(true);
-              localStorage.setItem('motocare_guest', 'true');
-            }
-            
-            const { data } = window.supabaseClient.auth.onAuthStateChange((_event, session) => {
-              setUser(session?.user || null);
-              if (session?.user) {
-                setGuestMode(false);
-                localStorage.setItem('motocare_guest', 'false');
-              } else {
-                setGuestMode(true);
-                localStorage.setItem('motocare_guest', 'true');
-              }
-            });
-            subscription = data.subscription;
           }
-        } catch (err) {
-          console.error('Auth check error:', err);
+        } else {
           setUser(null);
           setGuestMode(true);
           localStorage.setItem('motocare_guest', 'true');
-          window.supabaseOfflineFallbackActive = true;
         }
-      } else {
-        // Supabase not configured â€” immediate guest mode
+      } catch (err) {
+        console.error('Auth check error:', err);
         setUser(null);
         setGuestMode(true);
         localStorage.setItem('motocare_guest', 'true');
         window.supabaseOfflineFallbackActive = true;
+      } finally {
+        setLoadingAuth(false);
       }
-      setLoadingAuth(false);
     };
     checkSession();
-    return () => {
-      if (subscription) subscription.unsubscribe();
-    };
   }, []);
 
   // Offline toast trigger
@@ -2151,12 +2040,10 @@ function App() {
     }
   }, [loadingAuth]);
 
-  // Load all application data
+  // Load initial baseline data (vehicles)
   const loadAllData = async () => {
     try {
       const userId = user?.id || null;
-      
-      // Fetch vehicles
       const vList = await window.databaseService.getVehicles(userId);
       const cleanVList = vList.map(v => ({ ...v, locked: false }));
       setVehicles(cleanVList);
@@ -2166,44 +2053,144 @@ function App() {
         const exists = cleanVList.some(v => v.id === savedActive);
         const activeId = exists ? savedActive : cleanVList[0].id;
         setActiveVehicleId(activeId);
-
-        // Fetch components
-        const comps = await window.databaseService.getComponents(userId, activeId);
-        setVehicleComponents(prev => ({
-          ...prev,
-          [activeId]: comps
-        }));
-
-        // Fetch logs
-        const logs = await window.databaseService.getServiceLogs(userId, activeId);
-        setServiceHistory(logs);
       } else {
         setActiveVehicleId(null);
-        setServiceHistory([]);
       }
-
-      // Fetch shops
-      const shops = await window.databaseService.getShops(userId);
-      setCustomShops(shops);
 
       // Fetch trips
       const trips = await window.databaseService.getTrips(userId);
       setTripsLog(trips);
-
     } catch (err) {
       console.error("Error loading application data:", err);
     }
   };
 
+  // Trigger base load
   React.useEffect(() => {
     if (user || guestMode) {
       loadAllData();
     }
   }, [user, guestMode]);
 
-  // Refresh vehicle specifics on activeVehicleId change
+  // Cost summary load helper
+  const loadCostSummary = async () => {
+    if (!activeVehicleId || activeVehicleId === 'default') return;
+    const userId = user?.id || null;
+    if (userId && !guestMode && !String(activeVehicleId).startsWith('v_')) {
+      try {
+        const res = await fetch(`/api/service-costs-summary?vehicle_id=${activeVehicleId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setCostSummary(data);
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to load cost summary:", err);
+      }
+    }
+    // Guest mode / offline fallback
+    const guestData = getGuestData();
+    const activeHistory = (guestData.service_logs || []).filter(h => h.vehicleId === activeVehicleId);
+    const grouped = {};
+    activeHistory.forEach(h => {
+      if (!h.date) return;
+      const key = h.date.substring(0, 7); // "YYYY-MM"
+      grouped[key] = (grouped[key] || 0) + (h.cost || 0);
+    });
+    const summary = Object.keys(grouped).map(key => ({
+      month_key: key,
+      total_cost: grouped[key]
+    }));
+    setCostSummary(summary);
+  };
+
+  // Refresh cost summary on vehicle change
   React.useEffect(() => {
-    const loadDetails = async () => {
+    if (activeVehicleId) {
+      loadCostSummary();
+    }
+  }, [activeVehicleId, user, guestMode]);
+
+  // Paginated and debounced workshops loader
+  const loadShopsData = async () => {
+    const userId = user?.id || null;
+    if (userId && !guestMode) {
+      try {
+        const res = await fetch(`/api/workshops?page=${shopPage}&limit=10&search=${encodeURIComponent(debouncedShopSearch)}`);
+        if (res.ok) {
+          const result = await res.json();
+          setCustomShops(result.data.map(s => ({
+            id: s.id,
+            name: s.name,
+            address: s.address || '',
+            phone: s.phone || '',
+            rating: parseFloat(s.rating) || 4.5,
+            type: s.category || 'Umum',
+            notes: s.notes || ''
+          })));
+          setShopTotalPages(result.pagination.totalPages);
+          setShopTotalItems(result.pagination.totalItems);
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to load workshops:", err);
+      }
+    }
+    // Guest mode / offline fallback
+    const shops = await window.databaseService.getShops(userId);
+    const filtered = shops.filter(s => {
+      const searchMatch = s.name.toLowerCase().includes(debouncedShopSearch.toLowerCase()) || (s.address || '').toLowerCase().includes(debouncedShopSearch.toLowerCase());
+      return searchMatch;
+    });
+    setCustomShops(filtered);
+    setShopTotalPages(1);
+    setShopTotalItems(filtered.length);
+  };
+
+  React.useEffect(() => {
+    if (user || guestMode) {
+      if (loadedShopSearch.current !== debouncedShopSearch) {
+        loadedShopSearch.current = debouncedShopSearch;
+        if (shopPage !== 1) {
+          setShopPage(1);
+          return;
+        }
+      }
+      loadShopsData();
+    }
+  }, [debouncedShopSearch, shopPage, user, guestMode]);
+
+  // Paginated and cached service history loader
+  const loadHistoryData = async () => {
+    if (!activeVehicleId) return;
+    const userId = user?.id || null;
+    try {
+      const result = await window.databaseService.getServiceLogs(userId, activeVehicleId, historyPage, 10);
+      setServiceHistory(result.data || []);
+      setHistoryTotalPages(result.pagination?.totalPages || 1);
+      setHistoryTotalItems(result.pagination?.totalItems || 0);
+    } catch (err) {
+      console.error("Failed to load history page:", err);
+    }
+  };
+
+  React.useEffect(() => {
+    if (!activeVehicleId) return;
+    if (user || guestMode) {
+      if (loadedVehicleId.current !== activeVehicleId) {
+        loadedVehicleId.current = activeVehicleId;
+        if (historyPage !== 1) {
+          setHistoryPage(1);
+          return;
+        }
+      }
+      loadHistoryData();
+    }
+  }, [activeVehicleId, historyPage, user, guestMode]);
+
+  // Load components when activeVehicleId changes
+  React.useEffect(() => {
+    const loadComponentsData = async () => {
       if (!activeVehicleId || activeVehicleId === 'default') return;
       const userId = user?.id || null;
       try {
@@ -2212,17 +2199,14 @@ function App() {
           ...prev,
           [activeVehicleId]: comps
         }));
-
-        const logs = await window.databaseService.getServiceLogs(userId, activeVehicleId);
-        setServiceHistory(logs);
       } catch (err) {
-        console.error("Error loading vehicle details:", err);
+        console.error("Error loading components:", err);
       }
     };
     if (user || guestMode) {
-      loadDetails();
+      loadComponentsData();
     }
-  }, [activeVehicleId]);
+  }, [activeVehicleId, user, guestMode]);
 
   // Check migration modal trigger
   React.useEffect(() => {
@@ -2574,6 +2558,8 @@ function App() {
 
       const savedLog = await window.databaseService.createServiceLog(userId, activeVehicleId, newHistoryItem);
       setServiceHistory(prev => [savedLog, ...prev]);
+      loadCostSummary();
+      loadHistoryData();
       setSelectionMode(false);
       setSelectedComponents([]);
       showToast(`Servis ${componentNamesToService.length} komponen berhasil dicatat!`);
@@ -2620,6 +2606,8 @@ function App() {
 
       const savedLog = await window.databaseService.createServiceLog(userId, activeVehicleId, newHistoryItem);
       setServiceHistory(prev => [savedLog, ...prev]);
+      loadCostSummary();
+      loadHistoryData();
       setDetailComponentId(null);
       showToast(`Komponen ${comp.name} berhasil diservis!`);
     } catch (err) {
@@ -2934,6 +2922,8 @@ function App() {
         setVehicles(prev => prev.map(v => v.id === activeVehicleId ? updatedVehicle : v));
       }
 
+      loadCostSummary();
+      loadHistoryData();
       setActiveModal(null);
       setSelectedComponentsForLog([]);
       setFormErrors({});
@@ -2988,6 +2978,8 @@ function App() {
         [activeVehicleId]: updatedComps
       }));
 
+      loadCostSummary();
+      loadHistoryData();
       setActiveModal(null);
       setSelectedComponentsForLog([]);
       setFormErrors({});
@@ -3003,6 +2995,8 @@ function App() {
     try {
       await window.databaseService.deleteServiceLog(userId, activeVehicleId, logId);
       setServiceHistory(prev => prev.filter(h => h.id !== logId));
+      loadCostSummary();
+      loadHistoryData();
       setActiveModal(null);
       showToast('Catatan servis berhasil dihapus.');
     } catch (err) {
@@ -3041,6 +3035,7 @@ function App() {
     try {
       const saved = await window.databaseService.createShop(userId, newShop);
       setCustomShops(prev => [saved, ...prev]);
+      loadShopsData();
       setActiveModal(null);
       setFormErrors({});
       showToast('Bengkel favorit berhasil ditambahkan!');
@@ -3073,6 +3068,7 @@ function App() {
     try {
       await window.databaseService.updateShop(userId, updated);
       setCustomShops(prev => prev.map(s => s.id === updated.id ? updated : s));
+      loadShopsData();
       setActiveModal(null);
       setFormErrors({});
       showToast('Bengkel berhasil diperbarui!');
@@ -3087,6 +3083,7 @@ function App() {
     try {
       await window.databaseService.deleteShop(userId, shopId);
       setCustomShops(prev => prev.filter(s => s.id !== shopId));
+      loadShopsData();
       setActiveModal(null);
       showToast('Bengkel berhasil dihapus.');
     } catch (err) {
@@ -3280,16 +3277,19 @@ function App() {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setAuthError('');
-    if (!window.supabaseClient) {
-      setAuthError(window.supabaseError || 'Supabase Client gagal diinisiasi. Coba mode tamu.');
-      return;
-    }
     try {
-      const { error } = await window.supabaseClient.auth.signInWithPassword({
-        email: authEmail,
-        password: authPassword
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: authEmail, password: authPassword })
       });
-      if (error) throw error;
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Gagal masuk akun.');
+      }
+      setUser(data.user);
+      setGuestMode(false);
+      localStorage.setItem('motocare_guest', 'false');
       showToast('Login berhasil!');
     } catch (err) {
       setAuthError(err.message || 'Gagal masuk akun.');
@@ -3299,25 +3299,22 @@ function App() {
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setAuthError('');
-    if (!window.supabaseClient) {
-      setAuthError(window.supabaseError || 'Supabase Client tidak tersedia. Gunakan mode tamu.');
-      return;
-    }
     const fd = new FormData(e.target);
     const fullName = fd.get('fullName');
     try {
-      const { error } = await window.supabaseClient.auth.signUp({
-        email: authEmail,
-        password: authPassword,
-        options: {
-          data: {
-            full_name: fullName
-          }
-        }
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: fullName, email: authEmail, password: authPassword })
       });
-      if (error) throw error;
-      showToast('Pendaftaran berhasil! Silakan periksa email Anda.');
-      setAuthMode('login');
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Gagal mendaftar akun.');
+      }
+      setUser(data.user);
+      setGuestMode(false);
+      localStorage.setItem('motocare_guest', 'false');
+      showToast('Pendaftaran berhasil dan otomatis masuk!');
     } catch (err) {
       setAuthError(err.message || 'Gagal mendaftar akun.');
     }
@@ -3326,36 +3323,11 @@ function App() {
   const handleForgotSubmit = async (e) => {
     e.preventDefault();
     setAuthError('');
-    if (!window.supabaseClient) {
-      setAuthError('Supabase tidak terkonfigurasi.');
-      return;
-    }
-    try {
-      const { error } = await window.supabaseClient.auth.resetPasswordForEmail(authEmail);
-      if (error) throw error;
-      showToast('Email tautan pemulihan sandi telah dikirim.');
-      setAuthMode('login');
-    } catch (err) {
-      setAuthError(err.message || 'Gagal memproses lupa sandi.');
-    }
+    showToast('Fitur reset sandi tidak tersedia dalam konfigurasi mandiri saat ini.', 'error');
   };
 
   const handleGoogleLogin = async () => {
-    if (!window.supabaseClient) {
-      showToast('Supabase tidak terkonfigurasi.', 'error');
-      return;
-    }
-    try {
-      const { error } = await window.supabaseClient.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin
-        }
-      });
-      if (error) throw error;
-    } catch (err) {
-      setAuthError(err.message || 'Gagal masuk dengan Google.');
-    }
+    showToast('Fitur masuk dengan Google tidak tersedia dalam konfigurasi mandiri.', 'error');
   };
 
   const handleGuestMode = () => {
@@ -3365,9 +3337,9 @@ function App() {
   };
 
   const handleLogout = async () => {
-    if (window.supabaseClient) {
-      await window.supabaseClient.auth.signOut();
-    }
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {}
     setUser(null);
     setGuestMode(true);
     localStorage.setItem('motocare_guest', 'true');
@@ -3403,11 +3375,19 @@ function App() {
     setProfilePic(null);
     showToast('Foto profil dihapus.');
 
-    if (window.supabaseClient && userId) {
+    if (userId) {
       try {
-        await window.supabaseClient.storage.from('avatars').remove([`avatar_${userId}.webp`]);
+        const res = await fetch('/api/me/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: user.name, avatar_base64: '' })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user);
+        }
       } catch (err) {
-        console.warn("Failed to remove avatar from Supabase storage:", err);
+        console.warn("Failed to delete avatar from database:", err);
       }
     }
   };
@@ -3526,26 +3506,6 @@ function App() {
                   Masuk Akun
                 </button>
               </form>
-
-              <div className="flex items-center my-4 select-none">
-                <div className="flex-1 border-t border-white/[0.08]"></div>
-                <span className="px-3 text-[10px] text-iosGray uppercase tracking-widest font-extrabold">atau</span>
-                <div className="flex-1 border-t border-white/[0.08]"></div>
-              </div>
-
-              <button 
-                type="button"
-                onClick={handleGoogleLogin}
-                className="w-full bg-white hover:bg-white/90 text-black py-3.5 rounded-full font-bold text-xs active:scale-98 transition-transform flex items-center justify-center gap-2"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
-                Masuk dengan Google
-              </button>
             </div>
           )}
 
@@ -3594,26 +3554,6 @@ function App() {
                   Daftar Akun Baru
                 </button>
               </form>
-
-              <div className="flex items-center my-4 select-none">
-                <div className="flex-1 border-t border-white/[0.08]"></div>
-                <span className="px-3 text-[10px] text-iosGray uppercase tracking-widest font-extrabold">atau</span>
-                <div className="flex-1 border-t border-white/[0.08]"></div>
-              </div>
-
-              <button 
-                type="button"
-                onClick={handleGoogleLogin}
-                className="w-full bg-white hover:bg-white/90 text-black py-3.5 rounded-full font-bold text-xs active:scale-98 transition-transform flex items-center justify-center gap-2"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
-                Daftar dengan Google
-              </button>
             </div>
           )}
 
@@ -5029,6 +4969,39 @@ function App() {
                 </div>
               </div>
             ))}
+
+            {/* Pagination Controls */}
+            {historyTotalPages > 1 && (
+              <div className="flex items-center justify-between pt-4 border-t border-white/[0.04] mt-4 w-full select-none">
+                <span className="text-xs text-iosGray font-semibold">
+                  Halaman {historyPage} dari {historyTotalPages}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    disabled={historyPage <= 1}
+                    onClick={() => setHistoryPage(prev => Math.max(1, prev - 1))}
+                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                      historyPage <= 1
+                        ? 'text-iosGray/40 bg-white/[0.02] cursor-not-allowed'
+                        : 'text-white bg-white/[0.08] hover:bg-white/[0.12] active:scale-95'
+                    }`}
+                  >
+                    Sebelumnya
+                  </button>
+                  <button
+                    disabled={historyPage >= historyTotalPages}
+                    onClick={() => setHistoryPage(prev => Math.min(historyTotalPages, prev + 1))}
+                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                      historyPage >= historyTotalPages
+                        ? 'text-iosGray/40 bg-white/[0.02] cursor-not-allowed'
+                        : 'text-white bg-iosBlue hover:bg-iosBlue/90 active:scale-95 shadow-[0_0_10px_rgba(59,141,255,0.3)]'
+                    }`}
+                  >
+                    Berikutnya
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -5169,6 +5142,39 @@ function App() {
               ))
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {shopTotalPages > 1 && (
+          <div className="flex items-center justify-between pt-4 border-t border-white/[0.04] mt-4 max-w-4xl w-full select-none">
+            <span className="text-xs text-iosGray font-semibold">
+              Halaman {shopPage} dari {shopTotalPages}
+            </span>
+            <div className="flex gap-2">
+              <button
+                disabled={shopPage <= 1}
+                onClick={() => setShopPage(prev => Math.max(1, prev - 1))}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                  shopPage <= 1
+                    ? 'text-iosGray/40 bg-white/[0.02] cursor-not-allowed'
+                    : 'text-white bg-white/[0.08] hover:bg-white/[0.12] active:scale-95'
+                }`}
+              >
+                Sebelumnya
+              </button>
+              <button
+                disabled={shopPage >= shopTotalPages}
+                onClick={() => setShopPage(prev => Math.min(shopTotalPages, prev + 1))}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                  shopPage >= shopTotalPages
+                    ? 'text-iosGray/40 bg-white/[0.02] cursor-not-allowed'
+                    : 'text-white bg-iosBlue hover:bg-iosBlue/90 active:scale-95 shadow-[0_0_10px_rgba(59,141,255,0.3)]'
+                }`}
+              >
+                Berikutnya
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -5546,25 +5552,19 @@ function App() {
           showToast('Foto profil diperbarui!');
           setShowCropper(false);
 
-          if (window.supabaseClient && userId) {
+          if (userId) {
             try {
-              const { error } = await window.supabaseClient.storage
-                .from('avatars')
-                .upload(`avatar_${userId}.webp`, blob, {
-                  upsert: true,
-                  contentType: 'image/webp'
-                });
-              
-              if (!error) {
-                const { data } = window.supabaseClient.storage.from('avatars').getPublicUrl(`avatar_${userId}.webp`);
-                if (data && data.publicUrl) {
-                  const urlWithBuster = `${data.publicUrl}?t=${Date.now()}`;
-                  localStorage.setItem(key, urlWithBuster);
-                  setProfilePic(urlWithBuster);
-                }
+              const res = await fetch('/api/me/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: user.name, avatar_base64: base64 })
+              });
+              if (res.ok) {
+                const data = await res.json();
+                setUser(data.user);
               }
             } catch (storageErr) {
-              console.warn("Supabase Storage upload failed, fallback to local storage:", storageErr);
+              console.warn("Neon DB profile photo update failed:", storageErr);
             }
           }
         }, 'image/webp', 0.85);
@@ -5931,8 +5931,7 @@ function App() {
   );
 
   const renderMonthlyCostChart = () => {
-    const activeHistory = serviceHistory.filter(h => h.vehicleId === activeVehicleId);
-    const hasAnyCost = activeHistory.some(h => (h.cost || 0) > 0);
+    const hasAnyCost = costSummary && costSummary.some(item => (Number(item.total_cost) || 0) > 0);
 
     if (!hasAnyCost) {
       return (
@@ -5961,14 +5960,11 @@ function App() {
     }
 
     // Populate costs
-    activeHistory.forEach(h => {
-      if (!h.date) return;
-      const logDate = new Date(h.date);
-      if (isNaN(logDate.getTime())) return;
-      const key = `${logDate.getFullYear()}-${String(logDate.getMonth() + 1).padStart(2, '0')}`;
-      const found = monthsData.find(m => m.key === key);
+    costSummary.forEach(item => {
+      if (!item.month_key) return;
+      const found = monthsData.find(m => m.key === item.month_key);
       if (found) {
-        found.cost += (h.cost || 0);
+        found.cost += (Number(item.total_cost) || 0);
       }
     });
 
@@ -8064,6 +8060,7 @@ root.render(
     <App />
   </ErrorBoundary>
 );
+window.__reactMounted = true;
 
 </script>
 </body>

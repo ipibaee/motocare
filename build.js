@@ -2,22 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 console.log('Starting MotoCare build...');
-
-// Get environment variables
-let url = process.env.VITE_SUPABASE_URL || '';
-let key = process.env.VITE_SUPABASE_ANON_KEY || '';
-
-// Load local .env if it exists (for local testing if node is available)
-if (fs.existsSync('.env')) {
-  const envContent = fs.readFileSync('.env', 'utf8');
-  const urlMatch = envContent.match(/VITE_SUPABASE_URL\s*=\s*(.*)/);
-  const keyMatch = envContent.match(/VITE_SUPABASE_ANON_KEY\s*=\s*(.*)/);
-  if (urlMatch && urlMatch[1]) url = urlMatch[1].trim().replace(/['\"`]/g, '');
-  if (keyMatch && keyMatch[1]) key = keyMatch[1].trim().replace(/['\"`]/g, '');
-}
-
-console.log(`Supabase URL detected: ${url ? 'YES (configured)' : 'NO (empty, fallback to localStorage)'}`);
-console.log(`Supabase Anon Key detected: ${key ? 'YES (configured)' : 'NO (empty)'}`);
+console.log('Backend: Neon PostgreSQL via /api endpoints');
 
 // Read index.html
 if (!fs.existsSync('index.html')) {
@@ -26,23 +11,15 @@ if (!fs.existsSync('index.html')) {
 }
 let html = fs.readFileSync('index.html', 'utf8');
 
-// Clean up any previous injections to avoid duplicates
-const injectionRegex = /<!-- Environment variables injected by build.js -->[\s\S]*?<\/script>/g;
-html = html.replace(injectionRegex, '');
-
-// Inject env keys into window
-const injection = `<!-- Environment variables injected by build.js -->
-  <script>
-    window.VITE_SUPABASE_URL = "${url}";
-    window.VITE_SUPABASE_ANON_KEY = "${key}";
-  </script>`;
-html = html.replace('</head>', `${injection}\n</head>`);
+// Clean up any old Supabase env injection from previous builds (no-op if already clean)
+const injectionRegex = /<!-- Environment variables injected by build\.js -->[\s\S]*?<\/script>/g;
+html = html.replace(injectionRegex, '<!-- MotoCare API Backend Active - Neon PostgreSQL -->');
 
 // 1. Write back to root index.html (in-place)
 fs.writeFileSync('index.html', html);
-console.log('Successfully injected env variables into root index.html');
+console.log('Root index.html is ready.');
 
-// 2. Also write to dist/index.html (for backward compatibility if Vercel uses dist)
+// 2. Also write to dist/index.html (for Vercel deployment)
 if (!fs.existsSync('dist')) {
   fs.mkdirSync('dist');
 }
@@ -59,6 +36,23 @@ if (fs.existsSync('lib')) {
   });
   console.log('Successfully copied lib assets to dist/lib');
 }
+
+// Copy icon assets
+const iconFiles = [
+  'android-chrome-192x192.png',
+  'android-chrome-512x512.png',
+  'apple-touch-icon.png',
+  'favicon-16x16.png',
+  'favicon-32x32.png',
+  'favicon.ico',
+  'site.webmanifest'
+];
+iconFiles.forEach(file => {
+  if (fs.existsSync(file)) {
+    fs.copyFileSync(file, path.join('dist', file));
+  }
+});
+console.log('Copied PWA icon assets to dist/');
 
 console.log('Build completed successfully!');
 process.exit(0);
