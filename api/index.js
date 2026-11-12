@@ -17,8 +17,13 @@ app.use(cookieParser());
 const JWT_SECRET = process.env.JWT_SECRET || 'motocare_default_jwt_secret_key_123!';
 
 // Setup PostgreSQL pool with SSL enabled if needed (cloud Neon vs local aaPanel)
-const isSslRequired = process.env.DB_SSL === 'true' || 
-  (Boolean(process.env.DATABASE_URL) && (process.env.DATABASE_URL.includes('neon.tech') || process.env.DATABASE_URL.includes('sslmode=require')));
+const isLocalhost = Boolean(process.env.DATABASE_URL) && 
+  (process.env.DATABASE_URL.includes('127.0.0.1') || process.env.DATABASE_URL.includes('localhost'));
+
+const isSslRequired = !isLocalhost && (
+  process.env.DB_SSL === 'true' || 
+  (Boolean(process.env.DATABASE_URL) && (process.env.DATABASE_URL.includes('neon.tech') || process.env.DATABASE_URL.includes('sslmode=require')))
+);
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -228,7 +233,7 @@ app.post('/api/auth/register', async (req, res) => {
     return res.status(201).json({ user });
   } catch (err) {
     console.error("Register error:", err);
-    return res.status(500).json({ error: "Terjadi kesalahan server saat pendaftaran." });
+    return res.status(500).json({ error: "Terjadi kesalahan server saat pendaftaran: " + (err.message || '') });
   }
 });
 
@@ -272,7 +277,7 @@ app.post('/api/auth/login', async (req, res) => {
     });
   } catch (err) {
     console.error("Login error:", err);
-    return res.status(500).json({ error: "Terjadi kesalahan server saat masuk." });
+    return res.status(500).json({ error: "Terjadi kesalahan server saat masuk: " + (err.message || '') });
   }
 });
 

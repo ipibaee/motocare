@@ -5,6 +5,7 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const express = require('express');
 const apiRouter = require('./api/index.js');
+const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -23,7 +24,21 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 MotoCare server berjalan di http://localhost:${PORT}/`);
-  console.log(`📡 Database URL terdeteksi: ${process.env.DATABASE_URL ? 'YA (Terkonfigurasi)' : 'TIDAK (Belum terisi di .env)'}`);
+  const dbUrl = process.env.DATABASE_URL;
+  if (!dbUrl) {
+    console.error('❌ DATABASE_URL tidak ditemukan di .env! Mohon buat file .env');
+    return;
+  }
+  console.log(`📡 Menghubungkan ke database: ${dbUrl.replace(/:[^:@]+@/, ':****@')}`);
+  try {
+    const isLocal = dbUrl.includes('127.0.0.1') || dbUrl.includes('localhost');
+    const p = new Pool({ connectionString: dbUrl, ssl: isLocal ? false : { rejectUnauthorized: false } });
+    const res = await p.query('SELECT current_database(), current_user');
+    console.log(`✅ Berhasil terhubung ke database "${res.rows[0].current_database}" sebagai user "${res.rows[0].current_user}"`);
+    p.end();
+  } catch (err) {
+    console.error(`❌ Gagal koneksi database saat startup: ${err.message}`);
+  }
 });
