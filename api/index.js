@@ -14,10 +14,13 @@ app.use(cookieParser());
 
 const JWT_SECRET = process.env.JWT_SECRET || 'motocare_default_jwt_secret_key_123!';
 
-// Setup PostgreSQL pool with SSL enabled for Neon
+// Setup PostgreSQL pool with SSL enabled if needed (cloud Neon vs local aaPanel)
+const isSslRequired = process.env.DB_SSL === 'true' || 
+  (Boolean(process.env.DATABASE_URL) && (process.env.DATABASE_URL.includes('neon.tech') || process.env.DATABASE_URL.includes('sslmode=require')));
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+  ssl: isSslRequired ? { rejectUnauthorized: false } : false
 });
 
 let dbInitialized = false;
