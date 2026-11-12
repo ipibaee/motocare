@@ -1,11 +1,13 @@
 // server.js
-// Local development server supporting both static file hosting and API endpoints
-const express = require('express');
+// Local development & production server for MotoCare
 const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+const express = require('express');
 const apiRouter = require('./api/index.js');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 
 // Mount the API router
 app.use(apiRouter);
@@ -22,6 +24,6 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Local server running at http://localhost:${PORT}/`);
-  console.log('Press Ctrl+C to stop the server.');
+  console.log(`🚀 MotoCare server berjalan di http://localhost:${PORT}/`);
+  console.log(`📡 Database URL terdeteksi: ${process.env.DATABASE_URL ? 'YA (Terkonfigurasi)' : 'TIDAK (Belum terisi di .env)'}`);
 });
